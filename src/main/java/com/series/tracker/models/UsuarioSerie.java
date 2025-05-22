@@ -40,10 +40,12 @@ public class UsuarioSerie {
 
     @Column(name = "plataforma")
     @Enumerated(EnumType.STRING)
+    @Getter @Setter
     private Plataforma plataforma;
 
     @Column(name = "estado")
     @Enumerated(EnumType.STRING)
+    @Getter @Setter
     private EstadoSerie estado;
 
     @Getter @Setter

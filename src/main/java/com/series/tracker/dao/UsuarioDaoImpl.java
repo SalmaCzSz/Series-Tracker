@@ -28,6 +28,11 @@ public class UsuarioDaoImpl implements UsuarioDao{
     }
 
     @Override
+    public Usuario obtenerUsuarioPorId(long id) {
+        return entityManager.find(Usuario.class, id);
+    }
+
+    @Override
     public void modificarUsuario(Usuario usuario) {
         entityManager.merge(usuario);
     }

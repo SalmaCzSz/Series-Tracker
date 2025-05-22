@@ -11,6 +11,8 @@ public interface UsuarioSerieDao {
 
     UsuarioSerie obtenerVisualizacion(long usuarioId, long serieId);
 
+    UsuarioSerie obtenerVisualizacionPorId(long usuarioId, long serieId);
+
     void modificarVisualizacion(UsuarioSerie usuarioSerie);
 
     void eliminarVisualizacion(long usuarioId, long serieId);

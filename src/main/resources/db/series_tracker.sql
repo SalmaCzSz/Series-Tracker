@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS USUARIO (
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
     correo VARCHAR(150) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL
+    password VARCHAR(255) NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
 );
 
 -- Tabla SERIE
@@ -21,7 +22,8 @@ CREATE TABLE IF NOT EXISTS SERIE (
     pais VARCHAR(100) NOT NULL,
     anio_emision INT NOT NULL,
     protagonistas_historia VARCHAR(500) NOT NULL,
-    imagen_portada VARCHAR(255) NOT NULL
+    imagen_portada VARCHAR(255) NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
 );
 
 -- Tabla USUARIO_SERIE
@@ -38,6 +40,40 @@ CREATE TABLE IF NOT EXISTS USUARIO_SERIE (
     calificacion_historia DOUBLE NOT NULL,
     calificacion_ost DOUBLE NOT NULL,
     calificacion_escenografia DOUBLE NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_usuario) REFERENCES USUARIO(id),
+    FOREIGN KEY (id_serie) REFERENCES SERIE(id)
+);
+
+-- Tabla HISTORIAL_USUARIO_SERIE
+CREATE TABLE IF NOT EXISTS HISTORIAL_USUARIO_SERIE (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario_serie BIGINT NOT NULL,
+    plataforma VARCHAR(100),
+    estado VARCHAR(50),
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    frase_favorita VARCHAR(1000),
+    cancion_favorita VARCHAR(255),
+    calificacion_historia DOUBLE,
+    calificacion_ost DOUBLE,
+    calificacion_escenografia DOUBLE,
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario_serie) REFERENCES USUARIO_SERIE(id)
+);
+
+-- Tabla HISTORIAL_SERIE
+CREATE TABLE NOT EXISTS HISTORIAL_SERIE (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_serie BIGINT NOT NULL,
+    nombre VARCHAR(200),
+    genero VARCHAR(50),
+    episodios INT,
+    duracion_minutos INT,
+    pais VARCHAR(100),
+    anio_emision INT,
+    protagonistas_historia VARCHAR(500),
+    imagen_portada VARCHAR(255),
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_serie) REFERENCES SERIE(id)
 );

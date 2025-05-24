@@ -63,4 +63,17 @@ CREATE TABLE IF NOT EXISTS HISTORIAL_USUARIO_SERIE (
 );
 
 -- Tabla HISTORIAL_SERIE
-series_tracker
+CREATE TABLE IF NOT EXISTS HISTORIAL_SERIE (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_serie BIGINT NOT NULL,
+    nombre VARCHAR(200),
+    genero VARCHAR(50),
+    episodios INT,
+    duracion_minutos INT,
+    pais VARCHAR(100),
+    anio_emision INT,
+    protagonistas_historia VARCHAR(500),
+    imagen_portada VARCHAR(255),
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_serie) REFERENCES SERIE(id)
+);

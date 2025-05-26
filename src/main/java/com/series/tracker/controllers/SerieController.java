@@ -6,18 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/series")
 public class SerieController {
-
     @Autowired
     private SerieDao serieDao;
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Serie>> obtenerTodasLasSeries() {
+    public ResponseEntity<List<Serie>> obtenerSeries() {
         List<Serie> series = serieDao.obtenerSeries();
 
         return ResponseEntity.ok(series);

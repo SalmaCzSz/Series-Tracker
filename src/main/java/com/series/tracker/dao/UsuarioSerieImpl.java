@@ -40,18 +40,6 @@ public class UsuarioSerieImpl implements UsuarioSerieDao{
     }
 
     @Override
-    public UsuarioSerie obtenerVisualizacionPorId(long usuarioId, long serieId) {
-        String query = "FROM UsuarioSerie WHERE usuario.id = :usuarioId AND serie.id = :serieId";
-
-        List<UsuarioSerie> lista = entityManager.createQuery(query, UsuarioSerie.class)
-                .setParameter("usuarioId", usuarioId)
-                .setParameter("serieId", serieId)
-                .getResultList();
-
-        return lista.isEmpty() ? null : lista.get(0);
-    }
-
-    @Override
     public void modificarVisualizacion(UsuarioSerie usuarioSerie) {
         entityManager.merge(usuarioSerie);
     }

@@ -87,7 +87,7 @@
 
       const respuesta = await requestLogin.json()
       localStorage.setItem('token', respuesta.token);
-      localStorage.setItem('email', correo.value);
+      localStorage.setItem('correo', correo.value);
 
       mensaje.value = 'Inicio de sesión exitoso :)'
       error.value = false

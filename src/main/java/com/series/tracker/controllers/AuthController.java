@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -22,15 +24,21 @@ public class AuthController {
     private JWTUtil jwtUtil;
 
     @RequestMapping(value = "api/login", method = RequestMethod.POST)
-    public ResponseEntity<String>  login(@RequestBody Usuario usuario){
+    public ResponseEntity<Map<String, String>>  login(@RequestBody Usuario usuario){
         Usuario usuarioLogueado = usuarioDao.obtenerUsuarioPorCredenciales(usuario);
 
         if(usuarioLogueado != null){
             String tokenJwt = jwtUtil.create(String.valueOf(usuarioLogueado.getId()), usuarioLogueado.getCorreo());
 
-            return ResponseEntity.ok(tokenJwt);
+            Map<String, String> response = new HashMap<>();
+            response.put("token", tokenJwt);
+
+            return ResponseEntity.ok(response);
         }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+        Map<String, String> error = new HashMap<>();
+        error.put("mensaje", "Credenciales inválidas");
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 }

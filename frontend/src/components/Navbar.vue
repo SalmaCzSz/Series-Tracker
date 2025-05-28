@@ -19,10 +19,10 @@
             <div class="topbar-divider"></div>
           </li>
           <li class="nav-item dropdown">
-            <a class="navbar-brand dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"> User </a>
+            <a class="navbar-brand dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"> {{ correoUsuario }} </a>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="#">Perfil</a></li>
-              <li><a class="dropdown-item" href="#">Salir</a></li>
+              <li><a class="dropdown-item" href="#" @click.prevent="$emit('abrirPerfil')">Perfil</a></li>
+              <li><a class="dropdown-item" href="#" @click="cerrarSesion">Salir</a></li>
             </ul>
           </li>
         </ul>
@@ -31,13 +31,36 @@
   </nav>
 </template>
 
-<script>
+<script setup>
+  import { ref, onMounted } from 'vue';
+  import { useRouter } from 'vue-router';
+
+  const correoUsuario = ref('Usuario')
+  const router = useRouter()
+
+  onMounted(() => {
+    const correo = localStorage.getItem('correo');
+
+    if(correo){
+      correoUsuario.value = correo;
+    }
+  });
+
+  defineEmits(['abrirPerfil'])
+
+  const cerrarSesion = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('correo');
+
+    router.push('/');
+  };
 </script>
 
 <style scoped>
  .navbar{
    background-color: var(--color-primario);
    font-family: 'Quicksand';
+   position: relative;
  }
 
  .navbar-brand{
@@ -58,5 +81,13 @@
    height: 30px;
    background-color: black;
    align-self: center;
+ }
+
+ .dropdown-menu {
+   padding: 0.5rem 0.75rem;
+   margin-top: 10px;
+   left: auto;
+   right: 0;
+   margin-top: 0.5rem;
  }
 </style>

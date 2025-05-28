@@ -11,23 +11,24 @@
                     <div class="text-center">
                       <h1 class="h4 text-gray-900 mb-4">¡Bienvenido!</h1>
                     </div>
-                    <form class="login">
+                    <form class="login" @submit.prevent="iniciarSesion">
                       <div class="form-group">
                         <input v-model="correo" type="email" placeholder="Correo" id="txtCorreo" required />
                       </div>
                       <div class="form-group">
                         <input v-model="password" type="password" placeholder="Password" id="txtPassword" required />
                       </div>
-                      <button type="submit" :disabled="loading" onclick="iniciarSesion()">
+                      <button type="submit" :disabled="loading">
                         {{ loading ? "Iniciando Sesión..." : "INICIAR SESIÓN" }}
                       </button>
                     </form>
                     <hr>
                     <div class="text-center">
-                      <!-- <a class="small" href="registrar.html">Crear cuenta</a> -->
-                      <p class="registro-link">¿No tienes una cuenta? ¡Registrate!</p>
-                      <p v-if="message" :class="{'error-msg': error, 'success-msg': !error}">
-                        {{ message }}
+                      <router-link class="registro-link" to="/registrarUsuario">
+                        ¿No tienes una cuenta? ¡Registrate!
+                      </router-link>
+                      <p v-if="mensaje" :class="{'error-msg': error, 'success-msg': !error}">
+                        {{ mensaje }}
                       </p>
                     </div>
                   </div>
@@ -41,6 +42,66 @@
 </template>
 
 <script setup>
+  import { ref } from 'vue'
+  import { useRouter } from 'vue-router'
+
+  const correo = ref('')
+  const password = ref('')
+
+  const mensaje = ref('')
+  const error = ref(false)
+  const loading = ref(false)
+  const router = useRouter()
+
+  async function iniciarSesion(){
+    mensaje.value = ''
+    loading.value = true
+
+    try{
+      if(!correo.value || !password.value){
+        mensaje.value = 'Por favor, completa todos los campos.'
+        error.value = true
+        loading.value = false
+        return
+      }
+
+      const requestLogin = await fetch('http://localhost:8080/api/login',{
+        method: 'POST',
+        headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          correo: correo.value,
+          password: password.value
+        })
+      })
+
+      if (!requestLogin.ok) {
+        const mensajeError = await requestLogin.text()
+        mensaje.value = mensajeError || 'Las credenciales son incorrectas'
+        error.value = true
+        loading.value = false
+        return
+      } 
+
+      const respuesta = await requestLogin.json()
+      localStorage.setItem('token', respuesta.token);
+      localStorage.setItem('email', correo.value);
+
+      mensaje.value = 'Inicio de sesión exitoso :)'
+      error.value = false
+
+      setTimeout(() => {
+        router.push('/inicio')
+      }, 3500)
+    }catch(e){
+      mensaje.value = 'Error ' + e.message
+      error.value = true
+    }finally{
+      loading.value = false
+    }
+  }
 </script>
 
 <style scoped>

@@ -11,7 +11,7 @@
                     <div class="text-center">
                       <h1 class="h4 text-gray-900 mb-4">Crea una cuenta</h1>
                     </div>
-                    <form class="user">
+                    <form class="user" @submit.prevent="registrarUsuario">
                       <div class="form-group row">
                         <div class="col-12 col-sm-6 mb-3 mb-sm-0">
                           <input v-model="nombre" placeholder="Nombre" id="txtNombre" required />
@@ -31,15 +31,14 @@
                           <input v-model="repetirPassword" type="password" placeholder="Repetir password" id="txtRepetirPassword" required />
                         </div>
                       </div>
-                      <button type="submit" :disabled="loading" onclick="registrarUsuario()">
+                      <button type="submit" :disabled="loading">
                         {{ loading ? "Registrando..." : "CREAR CUENTA" }}
                       </button>
                     </form>
                     <hr>
                     <div class="text-center">
-                      <!-- <a class="small" href="registrar.html">Crear cuenta</a> -->
-                      <p v-if="message" :class="{'error-msg': error, 'success-msg': !error}">
-                        {{ message }}
+                      <p v-if="mensaje" :class="{'error-msg': error, 'success-msg': !error}">
+                        {{ mensaje }}
                       </p>
                     </div>
                   </div>
@@ -53,6 +52,72 @@
 </template>
 
 <script setup>
+  import { ref } from 'vue'
+  import { useRouter } from 'vue-router'
+
+  const nombre = ref('')
+  const apellido = ref('')
+  const correo = ref('')
+  const password = ref('')
+  const repetirPassword = ref('')
+
+  const mensaje = ref('')
+  const error = ref(false)
+  const loading = ref(false)
+  const router = useRouter()
+
+  async function registrarUsuario(){
+    mensaje.value = ''
+    loading.value = true
+
+    try{
+      if(!nombre.value ||
+         !apellido.value ||
+         !correo.value ||
+         !password.value ||
+         !repetirPassword){
+        mensaje.value = 'Por favor, completa todos los campos.'
+        error.value = true
+        return
+      }
+
+      if(password.value !== repetirPassword.value){
+        mensaje.value = 'Las contraseñas no coinciden'
+        error.value = true
+        return
+      }
+
+      const respuesta = await fetch('http://localhost:8080/api/usuarios',{
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: nombre.value,
+          apellido: apellido.value,
+          correo: correo.value,
+          password: password.value
+        })
+      })
+
+      if(!respuesta.ok){
+        const datos = await respuesta.json()
+        mensaje.value = datos.mensaje || 'No se pudo crear la cuenta'
+        error.value = true
+        return
+      }
+
+      mensaje.value = 'La cuenta fue creada con éito :)'
+      error.value = false
+
+      setTimeout(() => {
+        router.push('/')
+      }, 3500)
+    } catch(e){
+      mensaje.value = 'Error: ' + e.message
+      error.value = true
+    } finally{
+      loading.value = false
+    }
+  }
 </script>
 
 <style scoped>

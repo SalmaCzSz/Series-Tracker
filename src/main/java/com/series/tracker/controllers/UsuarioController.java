@@ -87,4 +87,20 @@ public class UsuarioController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Usuario> obtenerUsuarioPorId(@PathVariable long id,
+                                                       @RequestHeader("Authorization") String token) {
+        if (!validarToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Usuario usuario = usuarioDao.obtenerUsuarioPorId(id);
+
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(usuario);
+    }
 }

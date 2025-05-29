@@ -78,8 +78,7 @@
       })
 
       if (!requestLogin.ok) {
-        const mensajeError = await requestLogin.text()
-        mensaje.value = mensajeError || 'Las credenciales son incorrectas'
+        mensaje.value = 'Las credenciales son incorrectas'
         error.value = true
         loading.value = false
         return
@@ -87,6 +86,7 @@
 
       const respuesta = await requestLogin.json()
       localStorage.setItem('token', respuesta.token);
+      localStorage.setItem('userId', respuesta.userId);
       localStorage.setItem('correo', correo.value);
 
       mensaje.value = 'Inicio de sesión exitoso :)'

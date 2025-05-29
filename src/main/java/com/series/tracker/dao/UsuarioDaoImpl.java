@@ -22,9 +22,11 @@ public class UsuarioDaoImpl implements UsuarioDao{
 
     @Override
     public List<Usuario> obtenerUsuarios() {
-        String query = "FROM Usuario";
+        String query = "FROM Usuario WHERE activo = :activo";
 
-        return entityManager.createQuery(query, Usuario.class).getResultList();
+        return entityManager.createQuery(query, Usuario.class)
+                .setParameter("activo", true)
+                .getResultList();
     }
 
     @Override
@@ -42,7 +44,9 @@ public class UsuarioDaoImpl implements UsuarioDao{
         Usuario usuario = entityManager.find(Usuario.class, id);
 
         if (usuario != null) {
-            entityManager.remove(usuario);
+            //entityManager.remove(usuario);
+            usuario.setActivo(false);
+            entityManager.merge(usuario);
         }
     }
 

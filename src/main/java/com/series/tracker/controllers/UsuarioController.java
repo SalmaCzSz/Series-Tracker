@@ -64,7 +64,7 @@ public class UsuarioController {
         }
 
         usuarioExistente.setNombre(usuarioActualizado.getNombre());
-        usuarioExistente.setCorreo(usuarioActualizado.getCorreo());
+        usuarioExistente.setApellido(usuarioActualizado.getApellido());
 
         if (usuarioActualizado.getPassword() != null && !usuarioActualizado.getPassword().isEmpty()) {
             String hash = argon2.hash(1, 1024, 1, usuarioActualizado.getPassword());

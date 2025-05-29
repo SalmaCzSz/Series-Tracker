@@ -6,16 +6,11 @@ import com.series.tracker.utils.JWTUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "*")
 public class AuthController {
     @Autowired
     private UsuarioDao usuarioDao;
@@ -23,8 +18,16 @@ public class AuthController {
     @Autowired
     private JWTUtil jwtUtil;
 
-    @RequestMapping(value = "api/login", method = RequestMethod.POST)
+    @PostMapping("/api/login")
     public ResponseEntity<Map<String, String>>  login(@RequestBody Usuario usuario){
+        if(usuario.getCorreo() == null || usuario.getCorreo().isBlank() ||
+           usuario.getPassword() == null || usuario.getPassword().isBlank()){
+            Map<String, String> error = new HashMap<>();
+            error.put("mensaje", "Correo y contraseña son obligatorios");
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+
         Usuario usuarioLogueado = usuarioDao.obtenerUsuarioPorCredenciales(usuario);
 
         if(usuarioLogueado != null){

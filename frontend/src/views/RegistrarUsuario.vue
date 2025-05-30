@@ -164,13 +164,13 @@
  }
 
  .error-msg {
-   color: red;
+   color: var(--color-error);
    margin-top: 1rem;
    text-align: center;
  }
 
  .success-msg {
-   color: green;
+   color: var(--color-exito);
    margin-top: 1rem;
    text-align: center;
  }

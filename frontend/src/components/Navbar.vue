@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-      <router-link class="navbar-brand" to="/">Series Tracker</router-link>
+      <router-link class="navbar-brand" to="/inicio">Series Tracker</router-link>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
         <span class="navbar-toggler-icon"></span>
@@ -51,6 +51,7 @@
   const cerrarSesion = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('correo');
+    localStorage.removeItem('userId');
 
     router.push('/');
   };

@@ -131,7 +131,6 @@
 
 <script setup>
   import { ref, onMounted } from 'vue'
-  import axios from 'axios'
 
   const series = ref([])
   const loading = ref(true)
@@ -139,15 +138,24 @@
 
   onMounted(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/series')
-      series.value = response.data
+      const token = localStorage.getItem('token')
+
+      const response = await fetch('http://localhost:8080/api/series', {
+        method: 'GET',
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
+
+      const data = await response.json()
+      series.value = data
     } catch (err) {
-      console.error('Error al obtener series:', err)
+      console.error('Error al obtener series: ', err)
       error.value = true
     } finally {
       loading.value = false
     }
-})
+  })
 </script>
 
 

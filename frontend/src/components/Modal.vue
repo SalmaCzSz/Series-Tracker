@@ -47,11 +47,13 @@
 
   .mi-modal-inner{
     position: relative;
-    width: 55%;
-    padding: 40px;
-    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    padding: 1.5rem;
+    border-radius: 1rem;
     box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2);
     background-color: var(--color-primario);
+    margin: 2rem auto;
   }
 
   .mi-modal-content{

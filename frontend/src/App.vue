@@ -159,8 +159,15 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
   margin-top: 1rem;
+ }
+
+ .botones-footer button{
+  width: 95%;
+  max-width: 200px;
+  margin: 0 auto;
  }
 
  .btn-eliminar{
@@ -175,12 +182,13 @@
  @media (min-width: 768px) {
   .botones-footer {
     flex-direction: row;
+    justify-content: flex-end;
+    gap: 1rem;
   }
-  .botones-footer button {
-    flex-grow: 1; 
-    min-width: 75%;
+  .botones-footer button { 
+    min-width: 120px;
     width: auto;
-    margin: 0 0.5rem;
+    margin: 0;
   }
 }
 </style>

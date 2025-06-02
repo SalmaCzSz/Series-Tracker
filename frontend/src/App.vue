@@ -22,10 +22,10 @@
         </div>
         <div class="form-group row">
           <div class="col-12 col-sm-6 mb-3 mb-sm-0">
-            <input v-model="password" type="password" placeholder="Password" required />
+            <input v-model="password" type="password" placeholder="Password"/>
           </div>
           <div class="col-sm-6 col-12">
-            <input v-model="repetirPassword" type="password" placeholder="Repetir password" required />
+            <input v-model="repetirPassword" type="password" placeholder="Repetir password"/>
           </div>
         </div>
       </form>

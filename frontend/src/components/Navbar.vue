@@ -10,10 +10,10 @@
       <div class="collapse navbar-collapse" id="navbarContent">
         <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <router-link class="navbar-brand" to="/">+ Serie</router-link>
+            <router-link class="navbar-brand" to="/registrarSerie">+ Serie</router-link>
           </li>
           <li class="nav-item">
-            <router-link class="navbar-brand" to="/">Ver todo</router-link>
+            <router-link class="navbar-brand" to="/listarSeries">Ver todo</router-link>
           </li>
           <li class="nav-item d-none d-lg-block mx-3">
             <div class="topbar-divider"></div>

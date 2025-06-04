@@ -25,10 +25,7 @@
             <div class="form-group col-md-6">
               <select v-model="genero" required>
                 <option disabled value=""> Genero </option>
-                <option>Romance</option>
-                <option>Drama</option>
-                <option>Comedia</option>
-                <option>Acción</option>
+                <option v-for="genero in listaGenero" :key="genero" :value="genero"> {{ formateaEnum(genero) }} </option>
               </select>
             </div>
             <div class="form-group col-md-3">
@@ -49,17 +46,13 @@
             <div class="form-group col-md-6">
               <select v-model="plataforma" required>
                 <option disabled value=""> Plataforma </option>
-                <option>Netflix</option>
-                <option>Viki</option>
-                <option>Prime Video</option>
+                <option v-for="plataforma in listaPlataforma" :key="plataforma" :value="plataforma"> {{ formateaEnum(plataforma) }} </option>
               </select>
             </div>
             <div class="form-group col-md-6">
               <select v-model="estatus" required>
                 <option disabled value=""> Estatus </option>
-                <option>Finalizada</option>
-                <option>En emisión</option>
-                <option>Pendiente</option>
+                <option v-for="estatus in listaEstatus" :key="estatus" :value="estatus"> {{ formateaEnum(estatus) }} </option>
               </select>
             </div>
             <div class="form-group col-md-6">
@@ -143,7 +136,7 @@
 </template>
 
 <script setup>
-  import { ref, reactive, computed } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
 
   const imgPreview = ref(null)
 
@@ -180,6 +173,50 @@
     } else {
         imgPreview.value = null;
     }
+  }
+
+  const listaGenero = ref([])
+  const listaEstatus = ref([])
+  const listaPlataforma = ref([])
+  const token = localStorage.getItem('token');
+
+  const cargarEnums = async () => {
+    try{
+        const respuestaEstatus = await fetch('http://localhost:8080/api/enums/estado', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+
+        if(!respuestaEstatus.ok) throw new Error('No se pudo cargar el enum EstadoSerie')
+        listaEstatus.value = await respuestaEstatus.json();
+
+
+        const respuestaGenero = await fetch('http://localhost:8080/api/enums/genero', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+
+        if(!respuestaGenero.ok) throw new Error('No se pudo cargar el enum Genero')
+        listaGenero.value = await respuestaGenero.json();
+
+
+        const respuestaPlataforma = await fetch('http://localhost:8080/api/enums/plataforma', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+
+        if(!respuestaEstatus.ok) throw new Error('No se pudo cargar el enum Plataforma')
+        listaPlataforma.value = await respuestaPlataforma.json();
+    }catch(error){
+        console.error('Error cargando enums: ', error)
+    }
+  }
+
+  onMounted(() => {
+    cargarEnums();
+  })
+
+  const formateaEnum = (valor) => {
+    return valor.toLowerCase()
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
   }
 </script>
 

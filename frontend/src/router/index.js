@@ -12,7 +12,7 @@ const routes = [
   { path: '/inicio', component: Inicio, meta: { requiresAuth: true } },
   { path: '/registrarSerie', component: RegistrarSerie, meta: { requiresAuth: true } },
   { path: '/listarSeries', component: ListarSeries, meta: { requiresAuth: true } },
-  { path: '/:pathMatch(.*)*', component: NotFound, name: 'NotFound'}
+  { path: '/:pathMatch(.*)*', component: NotFound, name: 'NotFound', meta: { requiresAuth: true } }
 ];
 
 const router = createRouter({

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS SERIE (
     pais VARCHAR(100) NOT NULL,
     anio_emision INT NOT NULL,
     protagonistas_historia VARCHAR(500) NOT NULL,
-    imagen_portada VARCHAR(255) NOT NULL,
+    imagen_portada LONGBLOB NOT NULL,
     activo BOOLEAN DEFAULT TRUE
 );
 
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS HISTORIAL_SERIE (
     pais VARCHAR(100),
     anio_emision INT,
     protagonistas_historia VARCHAR(500),
-    imagen_portada VARCHAR(255),
+    imagen_portada LONGBLOB,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_serie) REFERENCES SERIE(id)
 );

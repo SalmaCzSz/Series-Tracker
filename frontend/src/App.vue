@@ -133,16 +133,6 @@
    justify-content: center;
  }
 
- input {
-   width: 100%;
-   padding: 0.5rem;
-   margin-top: 0.75rem;
-   border: none;
-   border-radius: 20px;
-   outline: none;
-   background-color: var(--color-fondo);
- }
-
  button {
    margin: 0.5rem 0;
    padding: 0.5rem;

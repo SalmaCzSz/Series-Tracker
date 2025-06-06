@@ -16,9 +16,19 @@
       <p class="text-muted">Sin información disponible</p>
     </div>
     <div v-else>
-      <ul>
+      <!--<ul>
         <li v-for="serie in series" :key="serie.id">{{ serie.nombre }}</li>
-      </ul>
+      </ul>-->
+      <PanelSlider :items="series">
+  <template #modal="{ show, item, close }">
+    <MyModal v-if="show" @close="close">
+      <template #title>{{ item.nombre }}</template>
+      <template #body>
+        <p>{{ item.descripcion || 'Sin descripción disponible.' }}</p>
+      </template>
+    </MyModal>
+  </template>
+</PanelSlider>
     </div>
   </div>
 
@@ -131,6 +141,8 @@
 
 <script setup>
   import { ref, onMounted } from 'vue'
+  import PanelSlider from '../components/PanelSlider.vue'
+  import Modal from '../components/Modal.vue'
 
   const series = ref([])
   const loading = ref(true)
@@ -148,7 +160,17 @@
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
 
       const data = await response.json()
-      series.value = data
+      //series.value = data
+
+      const sorted = data.sort((a, b) => b.id - a.id).slice(0, 5)
+
+      series.value = sorted.map(serie => ({
+        id: serie.id,
+        nombre: serie.nombre,
+        descripcion: `Género: ${serie.genero}, País: ${serie.pais}, Año: ${serie.anioEmision}`,
+        imagen: `data:image/jpeg;base64,${serie.imagenPortada}`,
+        titulo: serie.nombre
+      }))
     } catch (err) {
       console.error('Error al obtener series: ', err)
       error.value = true

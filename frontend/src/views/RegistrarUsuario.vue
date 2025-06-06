@@ -105,7 +105,7 @@
         return
       }
 
-      mensaje.value = 'La cuenta fue creada con éito :)'
+      mensaje.value = 'La cuenta fue creada con éxito :)'
       error.value = false
 
       setTimeout(() => {

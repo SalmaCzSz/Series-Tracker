@@ -126,16 +126,6 @@
    font-weight: 200;
  }
 
- input {
-   width: 100%;
-   padding: 0.5rem;
-   margin-top: 0.75rem;
-   border: none;
-   border-radius: 20px;
-   outline: none;
-   background-color: var(--color-fondo);
- }
-
  button {
    margin-top: 0.75rem;
    padding: 0.5rem;
@@ -153,17 +143,5 @@
    font-size: 0.9rem;
    font-weight: bold;
    color: #3b3b3b;
- }
-
- .error-msg {
-   color: var(--color-error);
-   margin-top: 1rem;
-   text-align: center;
- }
-
- .success-msg {
-   color: var(--color-exito);
-   margin-top: 1rem;
-   text-align: center;
  }
 </style>

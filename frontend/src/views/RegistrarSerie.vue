@@ -32,7 +32,7 @@
               <input v-model="pais" placeholder="Pais" required />
             </div>
             <div class="form-group col-md-3">
-              <input v-model="anioEmision" placeholder="Año emisión" required type="number" />
+              <input v-model="anioEmision" :placeholder="`Año emisión (máx. ${anioActual})`" required type="number" min="1900" :max="anioActual"/>
             </div>
             <div class="form-group col-md-3">
               <input v-model="noEpisodios" placeholder="Episodios" required type="number" />
@@ -61,7 +61,7 @@
             </div>
             <div class="form-group col-md-6">
               <label class="m-0 text-secondary">Fecha Fin</label>
-              <input v-model="fechaFin" required type="date" />
+              <input v-model="fechaFin" type="date" />
             </div>
           </div>
         </div>
@@ -72,7 +72,7 @@
         <div class="col-12 col-md-6">
           <div class="row form-frase p-3">
             <div class="form-group col-md-12 mt-0 mb-0">
-              <textarea v-model="fraseFavorita" placeholder="Frase favorita" required rows="10" />
+              <textarea v-model="fraseFavorita" placeholder="Frase favorita" required rows="10"></textarea>
             </div>
           </div>
         </div>
@@ -101,7 +101,7 @@
         <div class="col-12 col-md-6">
           <div class="row form-cancion p-3">
             <div class="form-group col-md-12">
-              <textarea v-model="cancionFavorita" placeholder="Canción favorita" required rows="3" />
+              <textarea v-model="cancionFavorita" placeholder="Canción favorita" required rows="3"></textarea>
             </div>
           </div>
         </div>
@@ -132,6 +132,13 @@
         </div>
       </div>
     </form>
+
+    <hr>
+    <div class="text-center">
+      <p v-if="mensaje" :class="{'error-msg': error, 'success-msg': !error}">
+        {{ mensaje }}
+      </p>
+    </div>
   </div>
 </template>
 
@@ -143,9 +150,9 @@
   const nombre = ref('');
   const genero = ref('');
   const pais = ref('');
-  const anioEmision = ref('');
-  const noEpisodios = ref('');
-  const duracionMinutos = ref('');
+  const anioEmision = ref(null);
+  const noEpisodios = ref(null);
+  const duracionMinutos = ref(null);
   const protagonistas = ref('');
   const plataforma = ref('');
   const estatus = ref('');
@@ -153,9 +160,9 @@
   const fechaFin = ref('');
   const fraseFavorita = ref('');
   const cancionFavorita = ref('');
-  const calificacionHistoria = ref('');
-  const calificacionOST = ref('');
-  const calificacionEscenografia = ref('');
+  const calificacionHistoria = ref(null);
+  const calificacionOST = ref(null);
+  const calificacionEscenografia = ref(null);
 
   const promedio = computed(() => {
     const total = Number(calificacionHistoria.value) + Number(calificacionOST.value) + Number(calificacionEscenografia.value)
@@ -163,15 +170,26 @@
   });
 
   const estrellasLlenas = computed(() => promedio.value / 2);
-  console.log('Estrellas llenas:', estrellasLlenas.value);
+
+  const imgPreviewBase64 = ref(null)
 
   function vistaPrevia(event){
     const file = event.target.files[0];
 
     if(file && file.type.startsWith('image/')){
         imgPreview.value = URL.createObjectURL(file);
+
+
+        const reader = new FileReader()
+        
+        reader.onload = () => {
+            imgPreviewBase64.value = reader.result.split(',')[1]
+        }
+
+        reader.readAsDataURL(file)
     } else {
-        imgPreview.value = null;
+        imgPreview.value = null
+        imgPreviewBase64.value = null
     }
   }
 
@@ -179,6 +197,7 @@
   const listaEstatus = ref([])
   const listaPlataforma = ref([])
   const token = localStorage.getItem('token');
+  const idUsuario = localStorage.getItem('userId')
 
   const cargarEnums = async () => {
     try{
@@ -202,7 +221,7 @@
         headers: { 'Authorization': 'Bearer ' + token }
       });
 
-        if(!respuestaEstatus.ok) throw new Error('No se pudo cargar el enum Plataforma')
+        if(!respuestaPlataforma.ok) throw new Error('No se pudo cargar el enum Plataforma')
         listaPlataforma.value = await respuestaPlataforma.json();
     }catch(error){
         console.error('Error cargando enums: ', error)
@@ -217,6 +236,127 @@
     return valor.toLowerCase()
                 .replace(/_/g, ' ')
                 .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  const loading = ref(false)
+  const anioActual = new Date().getFullYear()
+  const mensaje = ref('')
+  const error = ref(false)
+
+  async function guardarSerie(){
+    mensaje.value = ''
+    loading.value = true
+
+    try{
+      if(!imgPreview.value ||
+         !nombre.value ||
+         !genero.value ||
+         !pais.value ||
+         !anioEmision.value ||
+         !noEpisodios.value ||
+         !duracionMinutos.value ||
+         !protagonistas.value ||
+         !plataforma.value || 
+         !estatus.value ||
+         !fechaInicio.value ||
+         !fraseFavorita.value ||
+         !cancionFavorita.value ||
+         !calificacionHistoria.value ||
+         !calificacionOST.value ||
+         !calificacionEscenografia.value){
+        mensaje.value = 'Por favor, completa todos los campos.'
+        error.value = true
+        return
+      }
+
+      if(anioEmision.value < 1900 || anioEmision.value > anioActual){
+        mensaje.value = `El año de emisión debe estar entre 1900 y ${ anioActual}`
+        error.value = true
+        return
+      }
+
+      const fechaIni = new Date(fechaInicio.value)
+      const fechaFn = new Date(fechaFin.value)
+
+      if(fechaFin.value && fechaFn < fechaIni){
+        mensaje.value = 'La fecha de fin no puede ser anterior a la fecha inicio.'
+        error.value = true
+        return
+      }
+
+      const datos = {
+        idUsuario: idUsuario,
+        imgPreview: imgPreviewBase64.value,
+        nombre: nombre.value,
+        genero: genero.value,
+        pais: pais.value,
+        anioEmision: anioEmision.value,
+        noEpisodios: noEpisodios.value,
+        duracionMinutos: duracionMinutos.value,
+        protagonistas: protagonistas.value,
+        plataforma: plataforma.value,
+        estatus: estatus.value,
+        fechaInicio: fechaInicio.value,
+        fechaFin: fechaFin.value || null,
+        fraseFavorita: fraseFavorita.value || '',
+        cancionFavorita: cancionFavorita.value || '',
+        calificacionHistoria: calificacionHistoria.value ?? 0,
+        calificacionOST: calificacionOST.value ?? 0,
+        calificacionEscenografia: calificacionEscenografia.value ?? 0
+      }      
+
+      const respuesta = await fetch('http://localhost:8080/api/series', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datos)
+      })
+
+      if(!respuesta.ok){
+        const datos = await respuesta.json()
+        mensaje.value = datos.mensaje || 'No se pudo registrar la serie'
+        error.value = true
+        return
+      }
+
+      mensaje.value = 'La serie fue registrada con éxito :)'
+      error.value = false
+
+      setTimeout(() => {
+        resetFormulario()
+      }, 3500)
+    }catch(error){
+      mensaje.value = 'Error: ' + error.message
+      error.value = true
+    } finally{
+      loading.value = false
+    }
+  }
+
+  function resetFormulario() {
+    imgPreview.value = null
+    imgPreviewBase64.value = ''
+    nombre.value = ''
+    genero.value = ''
+    pais.value = ''
+    anioEmision.value = null
+    noEpisodios.value = null
+    duracionMinutos.value = null
+    protagonistas.value = ''
+    plataforma.value = ''
+    estatus.value = ''
+    fechaInicio.value = ''
+    fechaFin.value = ''
+    fraseFavorita.value = ''
+    cancionFavorita.value = ''
+    calificacionHistoria.value = null
+    calificacionOST.value = null
+    calificacionEscenografia.value = null
+
+    mensaje.value = ''
+    error.value = false
   }
 </script>
 
@@ -361,6 +501,18 @@
 
   .row > [class*='col-'] {
     margin-bottom: 1.5rem;
+  }
+
+  .error-msg {
+    color: var(--color-error);
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .success-msg {
+    color: var(--color-exito);
+    margin-top: 1rem;
+    text-align: center;
   }
 
   @media (min-width: 768px) {

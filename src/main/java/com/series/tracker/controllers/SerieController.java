@@ -2,6 +2,7 @@ package com.series.tracker.controllers;
 
 import com.series.tracker.dao.SerieDao;
 import com.series.tracker.models.Serie;
+import com.series.tracker.services.SerieService;
 import com.series.tracker.utils.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,9 @@ import java.util.Map;
 public class SerieController {
     @Autowired
     private SerieDao serieDao;
+
+    @Autowired
+    private SerieService serieService;
 
     private String getAuthenticatedUsername() {
         return SecurityUtil.getAuthenticatedUsername();
@@ -42,22 +46,24 @@ public class SerieController {
     }
 
     @PostMapping
-    public ResponseEntity<?> crearSerie(@RequestBody Serie serie) {
+    public ResponseEntity<?> crearSerie(@RequestBody Map<String, Object> datos) {
         String username = getAuthenticatedUsername();
 
         if(username == null){
             return unauthorizedResponse();
         }
 
-        ResponseEntity<Map<String,String>> error = validarSerie(serie);
-
-        if(error != null){
-            return error;
+        try {
+            serieService.guardarSerie(datos);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("mensaje", "Serie guardada correctamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al guardar la serie"));
         }
-
-        serieDao.crearSerie(serie);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(serie);
     }
 
     @GetMapping("/{id}")
@@ -147,7 +153,7 @@ public class SerieController {
             serie.getPais() == null || serie.getPais().isBlank() ||
             serie.getAnioEmision() <= 0 ||
             serie.getProtagonistasHistoria() == null || serie.getProtagonistasHistoria().isBlank() ||
-            serie.getImagenPortada() == null || serie.getImagenPortada().isBlank()) {
+            serie.getImagenPortada() == null) {
             Map<String, String> error = new HashMap<>();
             error.put("mensaje", "Por favor, ingrese todos los datos");
 

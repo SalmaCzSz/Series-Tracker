@@ -26,6 +26,12 @@ textarea {
   border-radius: 20px;
   outline: none;
   background-color: var(--color-fondo);
+  font-family: 'QuickSand';
+}
+
+button{
+  font-family: 'QuickSand'; 
+  font-weight: bold;
 }
 
 .error-msg {

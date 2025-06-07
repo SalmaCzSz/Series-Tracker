@@ -1,12 +1,14 @@
 <template>
   <div class="mi-modal">
-    <div class="mi-modal-inner">
+    <div class="mi-modal-inner" :class="claseExtra">
       <div class="mi-modal-close" @click="$emit('close')">
         &times;
       </div>
       <div class="mi-modal-content">
         <slot name="titulo" />
-        <slot name="contenido" />
+        <div class="mi-modal-scroll">
+          <slot name="contenido" />
+        </div>
       </div>
       <div class="mi-modal-footer">
         <slot name="botones" />
@@ -17,6 +19,13 @@
 
 <script setup>
   defineEmits(['close'])
+
+  const props = defineProps({
+    claseExtra: {
+      type: String,
+      default: ''
+    }
+  })
 </script>
 
 <style scoped>
@@ -25,11 +34,11 @@
     top: 0;
     left: 0;
     z-index: 10;
-    padding: 32px 16px 120px;
     height: 100vh;
     width: 100%;
-    display: grid;
-    place-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .mi-modal-close{
@@ -65,5 +74,22 @@
     margin-top: 0.75rem;
     display: flex;
     justify-content: flex-end;
+  }
+
+  .modal-detalle{
+    width: 90vw;         
+    max-width: 1200px; 
+    height: auto;
+  }
+
+  .mi-modal-scroll {
+    max-height: 90vh; 
+    overflow-y: auto;
+    overflow-x: hidden; 
+    padding-right: 0.5rem;
+    
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-exito) transparent;
+
   }
 </style>

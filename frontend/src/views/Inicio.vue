@@ -16,19 +16,14 @@
       <p class="text-muted">Sin información disponible</p>
     </div>
     <div v-else>
-      <!--<ul>
-        <li v-for="serie in series" :key="serie.id">{{ serie.nombre }}</li>
-      </ul>-->
       <PanelSlider :items="series">
-  <template #modal="{ show, item, close }">
-    <MyModal v-if="show" @close="close">
-      <template #title>{{ item.nombre }}</template>
-      <template #body>
-        <p>{{ item.descripcion || 'Sin descripción disponible.' }}</p>
-      </template>
-    </MyModal>
-  </template>
-</PanelSlider>
+        <template #modal="{ show, item, close }">
+          <MyModal v-if="show" @close="close">
+            <template #titulo>{{ item.nombre }} | {{ item.genero }} | {{ item.pais }} - {{ item.anioEmision }}</template>
+            <template #contenido />
+          </MyModal>
+        </template>
+      </PanelSlider>
     </div>
   </div>
 
@@ -151,8 +146,9 @@
   onMounted(async () => {
     try {
       const token = localStorage.getItem('token')
+      const idUsuario = localStorage.getItem('userId')
 
-      const response = await fetch('http://localhost:8080/api/series', {
+      const response = await fetch(`http://localhost:8080/api/usuarios/series/${idUsuario}`, {
         method: 'GET',
         headers: { 'Authorization': 'Bearer ' + token },
       });
@@ -164,12 +160,26 @@
 
       const sorted = data.sort((a, b) => b.id - a.id).slice(0, 5)
 
-      series.value = sorted.map(serie => ({
-        id: serie.id,
-        nombre: serie.nombre,
-        descripcion: `Género: ${serie.genero}, País: ${serie.pais}, Año: ${serie.anioEmision}`,
-        imagen: `data:image/jpeg;base64,${serie.imagenPortada}`,
-        titulo: serie.nombre
+      series.value = sorted.map(item => ({
+        id: item.id,
+        nombre: item.serie.nombre,
+        imagen: `data:image/jpeg;base64,${item.serie.imagenPortada}`,
+        titulo: item.serie.nombre,
+        genero: item.serie.genero,
+        pais: item.serie.pais,
+        anioEmision: item.serie.anioEmision,
+        episodios: item.serie.episodios,
+        duracionMinutos: item.serie.duracionMinutos,
+        protagonistasHistoria: item.serie.protagonistasHistoria,
+        plataforma: item.plataforma,
+        estado: item.estado,
+        fechaInicio: item.fecha_inicio,
+        fechaFin: item.fecha_fin,
+        fraseFavorita: item.fraseFavorita,
+        cancionFavorita: item.cancionFavorita,
+        calificacionHistoria: item.calificacionHistoria,
+        calificacionOst: item.calificacionOst,
+        calificacionEscenografia: item.calificacionEscenografia
       }))
     } catch (err) {
       console.error('Error al obtener series: ', err)

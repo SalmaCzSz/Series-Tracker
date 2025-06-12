@@ -32,13 +32,13 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, watchEffect } from 'vue';
   import { useRouter } from 'vue-router';
 
   const correoUsuario = ref('Usuario')
   const router = useRouter()
 
-  onMounted(() => {
+  watchEffect(() => {
     const correo = localStorage.getItem('correo');
 
     if(correo){

@@ -93,7 +93,9 @@
       error.value = false
 
       setTimeout(() => {
-        router.push('/inicio')
+        router.push('/inicio').then(() => {
+          location.reload()
+        })
       }, 3500)
     }catch(e){
       mensaje.value = 'Error ' + e.message

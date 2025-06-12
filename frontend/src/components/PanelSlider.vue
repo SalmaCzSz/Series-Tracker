@@ -17,7 +17,7 @@
     <!-- Modal info -->
     <Modal v-if="mostrarModal" @close="cerrarInfo" claseExtra="modal-detalle" class="text-center">
       <template #titulo>
-        <h3>{{ itemSeleccionado?.titulo }} &nbsp;&nbsp;|&nbsp;&nbsp;{{ capitalizar(itemSeleccionado.genero) }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ itemSeleccionado.pais }} - {{ itemSeleccionado.anioEmision }}</h3>
+        <h3>{{ itemSeleccionado?.titulo }} &nbsp;&nbsp;|&nbsp;&nbsp;{{ formateaEnum(itemSeleccionado.genero) }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ itemSeleccionado.pais }} - {{ itemSeleccionado.anioEmision }}</h3>
       </template>
 
       <template #contenido>
@@ -42,10 +42,10 @@
                 <input type="text" :value="itemSeleccionado.duracionMinutos + ' mn'" readonly/>
               </div>
               <div class="col-6 col-lg-3">
-                <input type="text" :value="'Disp. en ' + capitalizar(itemSeleccionado.plataforma)" readonly/>
+                <input type="text" :value="'Disp. en ' + formateaEnum(itemSeleccionado.plataforma)" readonly/>
               </div>
               <div class="col-6 col-lg-3">
-                <input type="text" :value="capitalizar(itemSeleccionado.estado)" readonly/>
+                <input type="text" :value="formateaEnum(itemSeleccionado.estado)" readonly/>
               </div>
             </div>
             <div class="my-2">
@@ -106,9 +106,10 @@
     itemSeleccionado.value = null
   }
 
-  function capitalizar(text) {
-    if (!text) return '';
-    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  const formateaEnum = (valor) => {
+    return valor.toLowerCase()
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
   }
 
   function calcularPromedio(item) {
@@ -155,5 +156,5 @@
     line-height: 1.5em;  
     width: 100%;
     box-sizing: border-box;    
-}
+  }
 </style>

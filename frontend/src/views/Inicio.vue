@@ -31,7 +31,7 @@
   <div class="my-3 mejor-evaluados">
     <div class="row">
       <div class="col-xl-10 col-lg-12 col-md-9 col-10">
-        <h3>Mejor evaluados</h3>
+        <h3>Mejor evaluados del mes</h3>
       </div>
     </div>
     <div v-if="loading">
@@ -44,9 +44,14 @@
       <p class="text-muted">Sin información disponible</p>
     </div>
     <div v-else>
-      <ul>
-        <li v-for="serie in series" :key="serie.id">{{ serie.nombre }}</li>
-      </ul>
+      <PanelCard :items="series" mostrarSeccion="mejores">
+        <template #modal="{ show, item, close }">
+          <MyModal v-if="show" @close="close">
+            <template #titulo> {{ item.nombre }} | {{ item.genero }} | {{ item.pais }} - {{ item.anioEmision }}</template>
+            <template #contenido />
+          </MyModal>
+        </template>
+      </PanelCard>
     </div>
   </div>
 
@@ -54,7 +59,7 @@
   <div class="my-3 peor-evaluados">
     <div class="row">
       <div class="col-xl-10 col-lg-12 col-md-9 col-10">
-        <h3>Peor evaluados</h3>
+        <h3>Peor evaluados del mes</h3>
       </div>
     </div>
     <div v-if="loading">
@@ -67,9 +72,14 @@
       <p class="text-muted">Sin información disponible</p>
     </div>
     <div v-else>
-      <ul>
-        <li v-for="serie in series" :key="serie.id">{{ serie.nombre }}</li>
-      </ul>
+      <PanelCard :items="series" mostrarSeccion="peores">
+        <template #modal="{ show, item, close }">
+          <MyModal v-if="show" @close="close">
+            <template #titulo> {{ item.nombre }} | {{ item.genero }} | {{ item.pais }} - {{ item.anioEmision }}</template>
+            <template #contenido />
+          </MyModal>
+        </template>
+      </PanelCard>
     </div>
   </div>
 
@@ -137,7 +147,7 @@
 <script setup>
   import { ref, onMounted } from 'vue'
   import PanelSlider from '../components/PanelSlider.vue'
-  import Modal from '../components/Modal.vue'
+  import PanelCard from '../components/PanelCard.vue'
 
   const series = ref([])
   const loading = ref(true)

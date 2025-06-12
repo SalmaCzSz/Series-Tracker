@@ -90,6 +90,5 @@
     
     scrollbar-width: thin;
     scrollbar-color: var(--color-exito) transparent;
-
   }
 </style>

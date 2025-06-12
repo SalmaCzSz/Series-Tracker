@@ -85,47 +85,41 @@
 
   <!-- Graficas -->
   <div class="my-3 graficas">
-    <div class="container-graf graf-pais">
-      <div class="row justify-content-center">
-        <div class="col-xl-5 col-md-6 text-center">
+    <div class="row no-gutters flex-wrap">
+      <div class="col-12 col-md-6">
+        <div class="container-graf graf-pais text-center h-100 d-flex flex-column justify-content-center">
           <h3>Series por país</h3>
-        </div>
+          <div v-if="loading">
+            <p>Cargando series...</p>
+          </div>
+          <div v-else-if="error">
+            <p class="text-danger">Ocurrió un error al cargar los datos.</p>
+          </div>
+          <div v-else-if="series.length === 0">
+            <p class="text-muted">Sin información disponible</p>
+          </div>
+          <div v-else class="chart-wrapper mx-auto">
+            <Grafica v-if="chartDataPais" :chartData="chartDataPais"/>
+          </div>
+        </div>  
       </div>
-      <div v-if="loading">
-        <p>Cargando series...</p>
-      </div>
-      <div v-else-if="error">
-        <p class="text-danger">Ocurrió un error al cargar los datos.</p>
-      </div>
-      <div v-else-if="series.length === 0">
-        <p class="text-muted">Sin información disponible</p>
-      </div>
-      <div v-else>
-        <ul>
-          <li v-for="serie in series" :key="serie.id">{{ serie.nombre }}</li>
-        </ul>
-      </div>
-    </div>
-    <div class="container-graf graf-estatus">
-      <div class="row justify-content-center">
-        <div class="col-xl-5 col-md-6 text-center">
+      <div class="col-12 col-md-6">
+        <div class="container-graf graf-estatus text-center h-100 d-flex flex-column justify-content-center">
           <h3>Series por estatus</h3>
+          <div v-if="loading">
+            <p>Cargando series...</p>
+          </div>
+          <div v-else-if="error">
+            <p class="text-danger">Ocurrió un error al cargar los datos.</p>
+          </div>
+          <div v-else-if="series.length === 0">
+            <p class="text-muted">Sin información disponible</p>
+          </div>
+          <div v-else class="chart-wrapper mx-auto">
+            <Grafica v-if="chartDataEstado" :chartData="chartDataEstado"/>
+          </div>
         </div>
-      </div>
-      <div v-if="loading">
-        <p>Cargando series...</p>
-      </div>
-      <div v-else-if="error">
-        <p class="text-danger">Ocurrió un error al cargar los datos.</p>
-      </div>
-      <div v-else-if="series.length === 0">
-        <p class="text-muted">Sin información disponible</p>
-      </div>
-      <div v-else>
-        <ul>
-          <li v-for="serie in series" :key="serie.id">{{ serie.nombre }}</li>
-        </ul>
-      </div>
+      </div>  
     </div>
   </div>
 
@@ -148,10 +142,13 @@
   import { ref, onMounted } from 'vue'
   import PanelSlider from '../components/PanelSlider.vue'
   import PanelCard from '../components/PanelCard.vue'
+  import Grafica from '../components/Grafica.vue'
 
   const series = ref([])
   const loading = ref(true)
   const error = ref(false)
+  const chartDataPais = ref(null)
+  const chartDataEstado = ref(null)
 
   onMounted(async () => {
     try {
@@ -166,8 +163,6 @@
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
 
       const data = await response.json()
-      //series.value = data
-
       const sorted = data.sort((a, b) => b.id - a.id).slice(0, 5)
 
       series.value = sorted.map(item => ({
@@ -191,6 +186,34 @@
         calificacionOst: item.calificacionOst,
         calificacionEscenografia: item.calificacionEscenografia
       }))
+
+      const paisCount = {}
+      series.value.forEach(serie => {
+        paisCount[serie.pais] = (paisCount[serie.pais] || 0)  + 1
+      })
+
+      chartDataPais.value = {
+        labels: Object.keys(paisCount),
+        datasets: [{
+          label: '',
+          data: Object.values(paisCount),
+          backgroundColor: ['#fad3cf', '#ffd0e2', '#ffd0f2', '#cfd0fe', '#cfffd0', '#d8fdf0', '#fffef0', '#feffd5']
+        }]
+      }
+
+      const estadoCount = {}
+      series.value.forEach(serie => {
+        estadoCount[serie.estado] = (estadoCount[serie.estado] || 0) + 1
+      })
+
+      chartDataEstado.value = {
+        labels: Object.keys(estadoCount),
+        datasets: [{
+          label: '',
+          data: Object.values(estadoCount),
+          backgroundColor: ['#feffd5', '#fffef0', '#d8fdf0', '#cfffd0', '#cfd0fe', '#ffd0f2', '#ffd0e2', '#fad3cf']
+        }]
+      }
     } catch (err) {
       console.error('Error al obtener series: ', err)
       error.value = true
@@ -199,7 +222,6 @@
     }
   })
 </script>
-
 
 <style scoped>
   .ultimos-agregados{
@@ -216,7 +238,6 @@
   }
 
   .graficas {
-    display: flex;
     width: 100%;
   }
 
@@ -254,5 +275,21 @@
     flex: 1;
     border-bottom: 1px dashed black;
     margin: 0 10px;
+  }
+
+  .row.no-gutters {
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .row.no-gutters > [class^="col"] {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .chart-wrapper {
+    width: 100%;
+    max-width: 600px; /* o 100% si quieres que ocupe todo el ancho */
+    padding: 1rem;
   }
 </style>

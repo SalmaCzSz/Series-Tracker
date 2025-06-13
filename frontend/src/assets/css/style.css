@@ -39,13 +39,13 @@ button{
 }
 
 .error-msg {
-  color: var(--color-error);
+  color: red;
   margin-top: 1rem;
   text-align: center;
 }
 
 .success-msg {
-  color: var(--color-exito);
+  color: green;
   margin-top: 1rem;
   text-align: center;
 }

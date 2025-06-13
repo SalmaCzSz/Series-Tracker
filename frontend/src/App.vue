@@ -31,9 +31,19 @@
       </form>
     </template>
     <template #botones>
-      <div class="botones-footer">
-        <button type="submit" class="btn-eliminar">ELIMINAR</button>
-        <button type="submit" class="btn-actualizar" form="form-editar-usuario">ACTUALIZAR</button>
+      <div>
+        <div class="botones-footer">
+          <button type="submit" class="btn-eliminar">ELIMINAR</button>
+          <button type="submit" class="btn-actualizar" @click="actualizarUsuario"> {{ loading ? "Actualizando..." : "ACTUALIZAR" }} </button>
+        </div>
+        <div class="mensaje-feedback">
+          <hr>
+          <div class="text-center">
+            <p v-if="mensaje" :class="{'error-msg': error, 'success-msg': !error}">
+              {{ mensaje }}
+            </p>
+          </div>
+        </div>
       </div>
     </template>
   </Modal>
@@ -75,11 +85,10 @@
   const correo = ref('')
   const password = ref('')
   const repetirPassword = ref('')
+  const userId = localStorage.getItem('userId');
+  const token = localStorage.getItem('token');
 
   const cargarDatos = async () => {
-    const userId = localStorage.getItem('userId');
-    const token = localStorage.getItem('token');
-
     try{
       const response = await fetch(`http://localhost:8080/api/usuarios/${userId}`, {
         headers: { 'Authorization': 'Bearer ' + token }
@@ -107,6 +116,70 @@
       cargarDatos()
     }
   })
+
+  const mensaje = ref('')
+  const error = ref(false)
+  const loading = ref(false)
+
+  async function actualizarUsuario(){
+    mensaje.value = ''
+    error.value = false
+
+    if(!nombre.value || !apellido.value){
+      mensaje.value = 'Por favor, completa todos los campos obligatorios.'
+      error.value = true
+      return
+    }
+
+    if(password.value && password.value !== repetirPassword.value){
+      mensaje.value = 'Las contraseñas no coinciden'
+      error.value = true
+      return
+    }
+
+    loading.value = true
+    try{
+      const body = {
+        nombre: nombre.value,
+        apellido: apellido.value,
+        correo: correo.value
+      }
+
+      if(password.value){
+        body.password = password.value
+      }
+
+      const response = await fetch(`http://localhost:8080/api/usuarios/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      })
+
+      if(!response.ok){
+        const errData = await response.json()
+        mensaje.value = errData.mensaje || 'Error actualizando usuario'
+        error.value = true
+        return
+      }
+
+      const data = await response.json()
+      mensaje.value = 'Usuario actualizado correctamente'
+      error.value = false
+
+      setTimeout(() => {
+        mensaje.value = ''
+        mostrarModal.value = false
+      }, 2000)
+    }catch(error){
+      mensaje.value = 'Error ' + error.message
+      error.value = true
+    }finally{
+      loading.value = false
+    }
+  }
 </script>
 
 <style scoped>
@@ -180,5 +253,15 @@
     width: auto;
     margin: 0;
   }
+  .mensaje-feedback {
+    text-align: center;
+    margin-top: 1rem;
+    width: 100%;
+  }
+}
+
+.mensaje-feedback {
+  text-align: center;
+  margin-top: 1rem;
 }
 </style>

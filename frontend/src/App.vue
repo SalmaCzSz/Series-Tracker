@@ -6,7 +6,7 @@
   <Modal v-if="mostrarModal" @close="mostrarModal = false">
     <template #titulo>
       <h3 class="h4 text-gray-900 mb-4">¡Hola, {{ correoUsuario }}!</h3>
-    </Template>
+    </template>
     <template #contenido>
       <form class="user" id="form-editar-usuario">
         <div class="form-group row">
@@ -33,8 +33,8 @@
     <template #botones>
       <div>
         <div class="botones-footer">
-          <button type="submit" class="btn-eliminar" @click.prevent="confirmarAccion('eliminar')">ELIMINAR</button>
-          <button type="submit" class="btn-actualizar" @click="confirmarAccion('actualizar')">ACTUALIZAR</button>
+          <button type="button" class="btn-eliminar" @click.prevent="confirmarAccion('eliminar')">ELIMINAR</button>
+          <button type="button" class="btn-actualizar" @click="confirmarAccion('actualizar')">ACTUALIZAR</button>
         </div>
       </div>
       <div class="mensaje-feedback">
@@ -52,7 +52,7 @@
   <Modal v-if="mostrarConfirmacion" @close="mostrarConfirmacion = false" claseExtra="modal-confirmacion">
     <template #titulo >
       <h3 class="h4 text-gray-900 mb-4"> Confirmar acción </h3>
-    </Template>
+    </template>
     <template #contenido>
       <p>
         Estás a punto de <strong> {{ accionConfirmar === 'eliminar' ? 'eliminar tu cuenta' : 'actualizar tu perfil' }} </strong> <br>
@@ -63,7 +63,7 @@
       <div class="botones-footer">
         <button type="submit" class="btn-cancelar" @click="mostrarConfirmacion = false">CANCELAR</button>
         <button type="submit" class="btn-confirmar" @click.prevent="ejecutarAccion">
-          {{ loading ? (accionConfirmar === 'eliminar' ? 'Eliminando...' : (accionConfirmar === 'Actualizar' ? 'Actualizando...' : 'Procesando...')) : (accionConfirmar ? accionConfirmar.toUpperCase() : 'CONFIRMAR') }}
+          {{ loading ? (accionConfirmar === 'eliminar' ? 'Eliminando...' : (accionConfirmar === 'actualizar' ? 'Actualizando...' : 'Procesando...')) : (accionConfirmar ? accionConfirmar.toUpperCase() : 'CONFIRMAR') }}
         </button>
       </div>
     </template>
@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-  import { useRoute } from 'vue-router'
+  import { useRoute, useRouter } from 'vue-router'
   import { ref, computed, onMounted, watch } from 'vue'
   import Navbar from './components/Navbar.vue'
   import Footer from './components/Footer.vue'
@@ -81,6 +81,7 @@
 
   // mostrar navbar y footer
   const route = useRoute()
+  const router = useRouter()
 
   const mostrarTemplates = computed(() => {
     return route?.path && !['/', '/registrarUsuario'].includes(route.path)
@@ -93,9 +94,9 @@
   const correoUsuario = ref('Usuario')
   onMounted(() => {
     const correoUser = localStorage.getItem('correo');
-    let usuario = correoUser.split("@");
 
     if(correoUser){
+      let usuario = correoUser.split("@");
       correoUsuario.value = usuario[0];
     }
   });
@@ -127,13 +128,21 @@
       password.value = ''
       repetirPassword.value = ''
       correoUsuario.value = data.correo.split('@')[0]
-    }catch(e){
+    }catch(error){
       console.error("Error cargando usuario:", error)
     }
   }
   
   watch(mostrarModal, (abierto) => {
     if (abierto) {
+      nombre.value = ''
+      apellido.value = ''
+      correo.value = ''
+      password.value = ''
+      repetirPassword.value = ''
+      mensaje.value = ''
+      error.value = false
+
       cargarDatos()
     }
   })
@@ -181,6 +190,32 @@
     }
   }
 
+  async function eliminarUsuario(){
+    try{
+      const response = await fetch(`http://localhost:8080/api/usuarios/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+        }
+      })
+
+      if(!response.ok){
+        const errData = await response.json()
+        mensaje.value = errData.mensaje || 'Error eliminando usuario'
+        error.value = true
+        return
+      }
+
+      mensaje.value = 'Cuenta eliminada correctamente. Cerrando sesión...'
+      error.value = false
+    }catch(error){
+      mensaje.value = 'Error ' + error.message
+      error.value = true
+    }finally{
+      loading.value = false
+    }
+  }
+
   const mostrarConfirmacion = ref(false)
   const accionConfirmar = ref(null)
 
@@ -189,7 +224,7 @@
     error.value = false
 
     if(accion === 'actualizar'){
-      if(!nombre.value || !apellido.value){
+      if(!nombre.value.trim() || !apellido.value.trim()){
         mensaje.value = 'Por favor, completa todos los campos obligatorios.'
         error.value = true
         return
@@ -213,18 +248,27 @@
 
     if(accionConfirmar.value === 'actualizar'){
       await actualizarUsuario()
+
+      setTimeout(() => {
+        mostrarConfirmacion.value = false
+      }, 2000)
+
+      setTimeout(() => {
+        mensaje.value = ''
+        mostrarModal.value = false
+      }, 5000)
     } else if(accionConfirmar.value === 'eliminar'){
-      // await eliminarUsuario()
-    }
+      await eliminarUsuario()
 
-    setTimeout(() => {
-      mostrarConfirmacion.value = false
-    })
+      setTimeout(() => {
+        mostrarConfirmacion.value = false
+      }, 2000)
 
-    setTimeout(() => {
-      mensaje.value = ''
-      mostrarModal.value = false
-    }, 5000)
+      setTimeout(() => {
+        localStorage.clear()
+        router.push('/')
+      }, 5000)
+    }      
   }
 </script>
 
@@ -314,9 +358,5 @@
 .mensaje-feedback {
   text-align: center;
   margin-top: 1rem;
-}
-
-.claseExtra{
-  background-color: var(--color-advertencia);
 }
 </style>

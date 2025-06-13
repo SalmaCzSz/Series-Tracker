@@ -33,17 +33,38 @@
     <template #botones>
       <div>
         <div class="botones-footer">
-          <button type="submit" class="btn-eliminar">ELIMINAR</button>
-          <button type="submit" class="btn-actualizar" @click="actualizarUsuario"> {{ loading ? "Actualizando..." : "ACTUALIZAR" }} </button>
+          <button type="submit" class="btn-eliminar" @click.prevent="confirmarAccion('eliminar')">ELIMINAR</button>
+          <button type="submit" class="btn-actualizar" @click="confirmarAccion('actualizar')">ACTUALIZAR</button>
         </div>
-        <div class="mensaje-feedback">
-          <hr>
-          <div class="text-center">
-            <p v-if="mensaje" :class="{'error-msg': error, 'success-msg': !error}">
-              {{ mensaje }}
-            </p>
-          </div>
+      </div>
+      <div class="mensaje-feedback">
+        <hr>
+        <div class="text-center">
+          <p v-if="mensaje" :class="{'error-msg': error, 'success-msg': !error}">
+            {{ mensaje }}
+          </p>
         </div>
+      </div>
+    </template>
+  </Modal>
+
+  <!-- Modal Confirmar Acción -->
+  <Modal v-if="mostrarConfirmacion" @close="mostrarConfirmacion = false" claseExtra="modal-confirmacion">
+    <template #titulo >
+      <h3 class="h4 text-gray-900 mb-4"> Confirmar acción </h3>
+    </Template>
+    <template #contenido>
+      <p>
+        Estás a punto de <strong> {{ accionConfirmar === 'eliminar' ? 'eliminar tu cuenta' : 'actualizar tu perfil' }} </strong> <br>
+        ¿Deseas continuar?
+      </p>
+    </template>
+    <template #botones>
+      <div class="botones-footer">
+        <button type="submit" class="btn-cancelar" @click="mostrarConfirmacion = false">CANCELAR</button>
+        <button type="submit" class="btn-confirmar" @click.prevent="ejecutarAccion">
+          {{ loading ? (accionConfirmar === 'eliminar' ? 'Eliminando...' : (accionConfirmar === 'Actualizar' ? 'Actualizando...' : 'Procesando...')) : (accionConfirmar ? accionConfirmar.toUpperCase() : 'CONFIRMAR') }}
+        </button>
       </div>
     </template>
   </Modal>
@@ -122,22 +143,6 @@
   const loading = ref(false)
 
   async function actualizarUsuario(){
-    mensaje.value = ''
-    error.value = false
-
-    if(!nombre.value || !apellido.value){
-      mensaje.value = 'Por favor, completa todos los campos obligatorios.'
-      error.value = true
-      return
-    }
-
-    if(password.value && password.value !== repetirPassword.value){
-      mensaje.value = 'Las contraseñas no coinciden'
-      error.value = true
-      return
-    }
-
-    loading.value = true
     try{
       const body = {
         nombre: nombre.value,
@@ -168,17 +173,58 @@
       const data = await response.json()
       mensaje.value = 'Usuario actualizado correctamente'
       error.value = false
-
-      setTimeout(() => {
-        mensaje.value = ''
-        mostrarModal.value = false
-      }, 2000)
     }catch(error){
       mensaje.value = 'Error ' + error.message
       error.value = true
     }finally{
       loading.value = false
     }
+  }
+
+  const mostrarConfirmacion = ref(false)
+  const accionConfirmar = ref(null)
+
+  function confirmarAccion(accion){
+    mensaje.value = ''
+    error.value = false
+
+    if(accion === 'actualizar'){
+      if(!nombre.value || !apellido.value){
+        mensaje.value = 'Por favor, completa todos los campos obligatorios.'
+        error.value = true
+        return
+      }
+
+      if(password.value && password.value !== repetirPassword.value){
+        mensaje.value = 'Las contraseñas no coinciden'
+        error.value = true
+        return
+      }
+    }
+
+    accionConfirmar.value = accion
+    mostrarConfirmacion.value = true
+  }
+
+  async function ejecutarAccion(){
+    loading.value = true
+    mensaje.value = ''
+    error.value = false
+
+    if(accionConfirmar.value === 'actualizar'){
+      await actualizarUsuario()
+    } else if(accionConfirmar.value === 'eliminar'){
+      // await eliminarUsuario()
+    }
+
+    setTimeout(() => {
+      mostrarConfirmacion.value = false
+    })
+
+    setTimeout(() => {
+      mensaje.value = ''
+      mostrarModal.value = false
+    }, 5000)
   }
 </script>
 
@@ -220,7 +266,7 @@
 
  .botones-footer {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
   justify-content: center;
   align-items: center;
@@ -237,7 +283,12 @@
   background-color: var(--color-error);
  }
 
- .btn-actualizar{
+ .btn-confirmar{
+  background-color: var(--color-exito);
+ }
+
+ .btn-actualizar,
+ .btn-cancelar{
   background-color: var(--color-secundario);
   margin-right: 0 !important;
  }
@@ -263,5 +314,9 @@
 .mensaje-feedback {
   text-align: center;
   margin-top: 1rem;
+}
+
+.claseExtra{
+  background-color: var(--color-advertencia);
 }
 </style>

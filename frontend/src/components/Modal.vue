@@ -72,8 +72,6 @@
 
   .mi-modal-footer{
     margin-top: 0.75rem;
-    display: flex;
-    justify-content: flex-end;
   }
 
   .modal-detalle{
@@ -90,5 +88,9 @@
     
     scrollbar-width: thin;
     scrollbar-color: var(--color-exito) transparent;
+  }
+
+  .modal-confirmacion{
+    background-color: var(--color-advertencia);
   }
 </style>

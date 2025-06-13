@@ -251,23 +251,24 @@
 
       setTimeout(() => {
         mostrarConfirmacion.value = false
-      }, 2000)
+      }, 1000)
 
       setTimeout(() => {
         mensaje.value = ''
         mostrarModal.value = false
-      }, 5000)
+      }, 3500)
     } else if(accionConfirmar.value === 'eliminar'){
       await eliminarUsuario()
 
       setTimeout(() => {
         mostrarConfirmacion.value = false
-      }, 2000)
+      }, 1000)
 
       setTimeout(() => {
+        mostrarModal.value = false 
         localStorage.clear()
         router.push('/')
-      }, 5000)
+      }, 3500)
     }      
   }
 </script>

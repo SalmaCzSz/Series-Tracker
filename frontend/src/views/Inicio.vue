@@ -160,9 +160,18 @@
         headers: { 'Authorization': 'Bearer ' + token },
       });
 
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
-
       const data = await response.json()
+
+      if (!response.ok){
+        if(data?.mensaje === 'Series no encontradas'){
+          series.value = []
+          error.value = false 
+          return
+        } else {
+          throw new Error(data?.mensaje || `Error HTTP: ${response.status}`)
+        }
+      }
+
       const sorted = data.sort((a, b) => b.id - a.id).slice(0, 5)
 
       series.value = sorted.map(item => ({

@@ -1,9 +1,11 @@
 <template>
-  <div class="container-fluid px-3 px-md-5">
-    <input v-model="filtro" type="text" placeholder="Filtrar serie" class="mb-3 input-filtro"/>
-  </div>
-  <div class="mb-5">
-    <PanelCard :items="seriesFiltradas" />
+  <div class="page-wrapper d-flex flex-column min-vh-100">
+    <main class="flex-grow-1 container-fluid px-3 px-md-5">
+      <input v-model="filtro" type="text" placeholder="Filtrar serie" class="mb-3 input-filtro"/>
+      <div class="mb-5 min-vh-">
+        <PanelCard :items="seriesFiltradas" />
+      </div>
+    </main>
   </div>
 </template>
 
@@ -88,5 +90,15 @@
 <style scoped>
   .input-filtro{
     background-color: var(--color-secundario);
+  }
+
+  .page-wrapper{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  main{
+    flex: 1;
   }
 </style>

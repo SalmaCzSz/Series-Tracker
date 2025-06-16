@@ -87,40 +87,23 @@ public class SerieController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> modificarSerie(@PathVariable long id, @RequestBody Serie serieActualizada) {
+    public ResponseEntity<?> modificarSerie(@PathVariable long id, @RequestBody Map<String, Object> datos) {
         String username = getAuthenticatedUsername();
 
         if(username == null){
             return unauthorizedResponse();
         }
 
-        Serie serieExistente = serieDao.obtenerSeriePorId(id);
-
-        if (serieExistente != null) {
-            ResponseEntity<Map<String,String>> error = validarSerie(serieActualizada);
-
-            if(error != null){
-                return error;
-            }
-
-            serieExistente.setNombre(serieActualizada.getNombre());
-            serieExistente.setGenero(serieActualizada.getGenero());
-            serieExistente.setEpisodios(serieActualizada.getEpisodios());
-            serieExistente.setDuracionMinutos(serieActualizada.getDuracionMinutos());
-            serieExistente.setPais(serieActualizada.getPais());
-            serieExistente.setAnioEmision(serieActualizada.getAnioEmision());
-            serieExistente.setProtagonistasHistoria(serieActualizada.getProtagonistasHistoria());
-            serieExistente.setImagenPortada(serieActualizada.getImagenPortada());
-
-            serieDao.modificarSerie(serieExistente);
-
-            return ResponseEntity.ok(serieExistente);
+        try {
+            serieService.actualizarSerie(id, datos);
+            return ResponseEntity.ok(Map.of("mensaje", "Serie actualizada correctamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("mensaje", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error al actualizar la serie"));
         }
-
-        Map<String, String> error = new HashMap<>();
-        error.put("mensaje", "Serie no encontrada");
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     @DeleteMapping("/{id}")

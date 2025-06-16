@@ -144,7 +144,253 @@
 </template>
 
 <script setup>
+  import { ref, computed, onMounted } from 'vue'
+  import { useRoute, useRouter } from 'vue-router';
 
+  const router = useRouter()
+  const route = useRoute()
+
+  const imgPreview = ref(null)
+  const imgPreviewBase64 = ref(null)
+  const nombre = ref('');
+  const genero = ref('');
+  const pais = ref('');
+  const anioEmision = ref(null);
+  const noEpisodios = ref(null);
+  const duracionMinutos = ref(null);
+  const protagonistas = ref('');
+  const plataforma = ref('');
+  const estatus = ref('');
+  const fechaInicio = ref('');
+  const fechaFin = ref('');
+  const fraseFavorita = ref('');
+  const cancionFavorita = ref('');
+  const calificacionHistoria = ref(null);
+  const calificacionOST = ref(null);
+  const calificacionEscenografia = ref(null);
+
+  const listaGenero = ref([])
+  const listaEstatus = ref([])
+  const listaPlataforma = ref([])
+
+  const token = localStorage.getItem('token')
+  const idUsuario = localStorage.getItem('userId')
+
+  const anioActual = new Date().getFullYear()
+  const loading = ref(false)
+  const mensaje = ref('')
+  const error = ref(false)
+  const idSerie = ref('')
+
+  const promedio = computed(() => {
+    const total = Number(calificacionHistoria.value) + Number(calificacionOST.value) + Number(calificacionEscenografia.value)
+    return total ? total / 3 : 0;
+  });
+
+  const estrellasLlenas = computed(() => promedio.value / 2);
+
+  function vistaPrevia(event){
+    const file = event.target.files[0];
+
+    if(file && file.type.startsWith('image/')){
+        imgPreview.value = URL.createObjectURL(file);
+
+        const reader = new FileReader()
+        
+        reader.onload = () => {
+            imgPreviewBase64.value = reader.result.split(',')[1]
+        }
+
+        reader.readAsDataURL(file)
+    } else {
+        imgPreview.value = null
+        imgPreviewBase64.value = null
+    }
+  }
+
+  const formateaEnum = (valor) => {
+    return valor.toLowerCase()
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  async function cargarEnums(){
+    try{
+      const [eRes, gRes, pRes] = await Promise.all([
+        fetch('http://localhost:8080/api/enums/estado', { headers: { 'Authorization': 'Bearer ' + token } }),
+        fetch('http://localhost:8080/api/enums/genero', { headers: { 'Authorization': 'Bearer ' + token } }),
+        fetch('http://localhost:8080/api/enums/plataforma', { headers: { 'Authorization': 'Bearer ' + token } })
+      ])
+
+      if(!eRes.ok || !gRes.ok || !pRes.ok) throw new Error('Error al cargar enums')
+      
+      listaEstatus.value = await eRes.json()
+      listaGenero.value = await gRes.json()
+      listaPlataforma.value = await pRes.json()
+    }catch(error){
+      console.error('Error cargando enums: ', error)
+    }
+  }
+
+  async function obtenerSerie(id){
+    try{
+      const response = await fetch(`http://localhost:8080/api/usuarios/series/${idUsuario}/${id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        mensaje.value = 'No se pudo cargar la serie'
+        error.value = true
+        return
+      }
+
+      const data = await response.json()
+      cargarDatos(data)
+      idSerie.value = data.serie.id
+    }catch(error){
+      mensaje.value = 'Error al cargar la serie: ' + error.message
+      error.value = true
+    }
+  }
+
+  function cargarDatos(serie) {
+    imgPreview.value = `data:image/jpeg;base64,${serie.serie.imagenPortada}`
+    imgPreviewBase64.value = serie.serie.imagenPortada
+    nombre.value = serie.serie.nombre
+    genero.value = serie.serie.genero
+    pais.value = serie.serie.pais
+    anioEmision.value = serie.serie.anioEmision
+    noEpisodios.value = serie.serie.episodios
+    duracionMinutos.value = serie.serie.duracionMinutos
+    protagonistas.value = serie.serie.protagonistasHistoria
+    plataforma.value = serie.plataforma
+    estatus.value = serie.estado
+    fechaInicio.value = serie.fecha_inicio
+    fechaFin.value = serie.fecha_fin
+    fraseFavorita.value = serie.fraseFavorita
+    cancionFavorita.value = serie.cancionFavorita
+    calificacionHistoria.value = serie.calificacionHistoria
+    calificacionOST.value = serie.calificacionOst
+    calificacionEscenografia.value = serie.calificacionEscenografia
+
+  }
+
+  function cancelarEdicion(){
+    router.push('/inicio')
+  }
+
+  async function editarSerie(){
+    mensaje.value = ''
+    loading.value = true
+
+    try{
+      if(!imgPreviewBase64.value || imgPreviewBase64.value.trim() === '' ||
+         !nombre.value ||
+         !genero.value ||
+         !pais.value ||
+         !anioEmision.value ||
+         !noEpisodios.value ||
+         !duracionMinutos.value ||
+         !protagonistas.value ||
+         !plataforma.value || 
+         !estatus.value ||
+         !fechaInicio.value ||
+         !fraseFavorita.value ||
+         !cancionFavorita.value ||
+         !calificacionHistoria.value ||
+         !calificacionOST.value ||
+         !calificacionEscenografia.value){
+        error.value = true
+        mensaje.value = 'Por favor, completa todos los campos.'
+        return
+      }
+
+      if(anioEmision.value < 1900 || anioEmision.value > anioActual){
+        error.value = true
+        mensaje.value = `El año de emisión debe estar entre 1900 y ${ anioActual}`
+        return
+      }
+
+      const fechaIni = new Date(fechaInicio.value)
+      const fechaFn = new Date(fechaFin.value)
+
+      if(fechaFin.value && fechaFn < fechaIni){
+        error.value = true
+        mensaje.value = 'La fecha de fin no puede ser anterior a la fecha inicio.'
+        return
+      }
+
+      if(!idSerie.value){
+        mensaje.value = 'No se pudo obtener el ID de la serie.'
+        error.value = true
+        return
+      }
+
+      const datos = {
+        idUsuario: idUsuario,
+        imgPreview: imgPreviewBase64.value,
+        nombre: nombre.value,
+        genero: genero.value,
+        pais: pais.value,
+        anioEmision: anioEmision.value,
+        noEpisodios: noEpisodios.value,
+        duracionMinutos: duracionMinutos.value,
+        protagonistas: protagonistas.value,
+        plataforma: plataforma.value,
+        estatus: estatus.value,
+        fechaInicio: fechaInicio.value,
+        fechaFin: fechaFin.value || null,
+        fraseFavorita: fraseFavorita.value || '',
+        cancionFavorita: cancionFavorita.value || '',
+        calificacionHistoria: calificacionHistoria.value ?? 0,
+        calificacionOST: calificacionOST.value ?? 0,
+        calificacionEscenografia: calificacionEscenografia.value ?? 0
+      }      
+
+      const respuesta = await fetch(`http://localhost:8080/api/series/${idSerie.value}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datos)
+      })
+
+      if(!respuesta.ok){
+        const datos = await respuesta.json()
+        mensaje.value = datos.mensaje || 'No se pudo actualizar la serie'
+        error.value = true
+        return
+      }
+
+      mensaje.value = 'La serie fue actualizada con éxito :)'
+      error.value = false
+
+      setTimeout(() => {
+        router.push('/inicio')
+      }, 3500)
+    }catch(error){
+      mensaje.value = 'Error: ' + error.message
+      error.value = true
+    } finally{
+      loading.value = false
+    }
+  }
+
+  onMounted(() => {
+    cargarEnums()
+
+    const serieId = route.params.id
+    if(serieId){
+      obtenerSerie(serieId)
+    }else{
+      router.push('/inicio')
+    }
+  })
 </script>
 
 <style scoped>

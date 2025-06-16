@@ -153,12 +153,12 @@ public class UsuarioSerieController {
         if (usuarioSerie.getPlataforma() == null ||
             usuarioSerie.getEstado() == null ||
             usuarioSerie.getFecha_inicio() == null ||
-            usuarioSerie.getFecha_fin() == null ||
+            //usuarioSerie.getFecha_fin() == null ||
             usuarioSerie.getFraseFavorita() == null || usuarioSerie.getFraseFavorita().isBlank() ||
             usuarioSerie.getCancionFavorita() == null || usuarioSerie.getCancionFavorita().isBlank() ||
-            usuarioSerie.getCalificacionHistoria() <= 0 ||
-            usuarioSerie.getCalificacionOst() <= 0 ||
-            usuarioSerie.getCalificacionEscenografia() <= 0) {
+            usuarioSerie.getCalificacionHistoria() < 0 ||
+            usuarioSerie.getCalificacionOst() < 0 ||
+            usuarioSerie.getCalificacionEscenografia() < 0) {
             Map<String, String> error = new HashMap<>();
             error.put("mensaje", "Por favor, ingrese todos los datos");
 

@@ -86,4 +86,71 @@ public class SerieService {
 
         usuarioSerieDao.registrarVisualizacion(usuarioSerie);
     }
+
+    @Transactional
+    public void actualizarSerie(Long idSerie, Map<String, Object> datos){
+        Serie serieExistente = em.find(Serie.class, idSerie);
+
+        if(serieExistente == null){
+            throw new IllegalArgumentException("Serie con ID: " + idSerie + " no encontrada.");
+        }
+
+
+        String imgBase64 = (String) datos.get("imgPreview");
+
+        if(imgBase64 != null && !imgBase64.isEmpty()){
+            byte[] imgBytes = Base64.getDecoder().decode(imgBase64);
+            serieExistente.setImagenPortada(imgBytes);
+        }
+
+        serieExistente.setNombre((String) datos.get("nombre"));
+        serieExistente.setGenero(Genero.valueOf((String) datos.get("genero")));
+        serieExistente.setPais((String) datos.get("pais"));
+        serieExistente.setAnioEmision((Integer) datos.get("anioEmision"));
+        serieExistente.setEpisodios((Integer) datos.get("noEpisodios"));
+        serieExistente.setDuracionMinutos((Integer) datos.get("duracionMinutos"));
+        serieExistente.setProtagonistasHistoria((String) datos.get("protagonistas"));
+
+        serieDao.modificarSerie(serieExistente);
+
+
+        Long idUsuario = Long.valueOf(datos.get("idUsuario").toString());
+        Usuario usuario = em.find(Usuario.class, idUsuario);
+
+        if(usuario == null){
+            throw  new IllegalArgumentException("Usuario con ID " + idUsuario + " no encontrado.");
+        }
+
+
+        UsuarioSerie usuarioSerie = usuarioSerieDao.obtenerVisualizacion(idUsuario, idSerie);
+        if(usuarioSerie == null){
+            throw new IllegalArgumentException("No se encontró relación entre el usuario y la serie.");
+        }
+
+        usuarioSerie.setPlataforma(Plataforma.valueOf((String) datos.get("plataforma")));
+        usuarioSerie.setEstado(EstadoSerie.valueOf((String) datos.get("estatus")));
+
+        String fechaInicioStr = (String) datos.get("fechaInicio");
+        String fechaFinStr = (String) datos.get("fechaFin");
+
+        if (fechaInicioStr != null && !fechaInicioStr.isEmpty()) {
+            usuarioSerie.setFecha_inicio(Date.valueOf(fechaInicioStr));
+        } else {
+            usuarioSerie.setFecha_inicio(null);
+        }
+
+        if (fechaFinStr != null && !fechaFinStr.isEmpty()) {
+            usuarioSerie.setFecha_fin(Date.valueOf(fechaFinStr));
+        } else {
+            usuarioSerie.setFecha_fin(null);
+        }
+
+        usuarioSerie.setFraseFavorita((String) datos.get("fraseFavorita"));
+        usuarioSerie.setCancionFavorita((String) datos.get("cancionFavorita"));
+        usuarioSerie.setCalificacionHistoria(Double.valueOf(datos.get("calificacionHistoria").toString()));
+        usuarioSerie.setCalificacionOst(Double.valueOf(datos.get("calificacionOST").toString()));
+        usuarioSerie.setCalificacionEscenografia(Double.valueOf(datos.get("calificacionEscenografia").toString()));
+
+        usuarioSerieDao.modificarVisualizacion(usuarioSerie);
+    }
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="mi-modal">
-    <div class="mi-modal-inner mi-modal-scroll" :class="claseExtra">
+    <div class="mi-modal-inner" :class="claseExtra">
       <div class="mi-modal-close" @click="$emit('close')">
         &times;
       </div>
@@ -69,7 +69,7 @@
   }
 
   .mi-modal-footer{
-    padding-right: 3rem !important;
+    margin-top: 0.75rem;
   }
 
   .modal-detalle{

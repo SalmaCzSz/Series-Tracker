@@ -69,7 +69,7 @@
   }
 
   .mi-modal-footer{
-    margin-top: 0.75rem;
+    padding-right: 3rem !important;
   }
 
   .modal-detalle{

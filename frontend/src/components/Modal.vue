@@ -1,14 +1,12 @@
 <template>
   <div class="mi-modal">
-    <div class="mi-modal-inner" :class="claseExtra">
+    <div class="mi-modal-inner mi-modal-scroll" :class="claseExtra">
       <div class="mi-modal-close" @click="$emit('close')">
         &times;
       </div>
       <div class="mi-modal-content">
         <slot name="titulo" />
-        <div class="mi-modal-scroll">
-          <slot name="contenido" />
-        </div>
+        <slot name="contenido" />
       </div>
       <div class="mi-modal-footer">
         <slot name="botones" />

@@ -1,6 +1,7 @@
 package com.series.tracker.dao;
 
 import com.series.tracker.models.Serie;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
@@ -12,6 +13,9 @@ import java.util.List;
 public class SerieDaoImpl implements SerieDao{
     @PersistenceContext
     EntityManager entityManager;
+
+    @Autowired
+    private UsuarioSerieDao usuarioSerieDao;
 
     @Override
     public void crearSerie(Serie serie) {
@@ -39,6 +43,8 @@ public class SerieDaoImpl implements SerieDao{
         if (serie != null) {
             serie.setActivo(false);
             entityManager.merge(serie);
+
+            usuarioSerieDao.eliminarVisualizacionesPorSerieId(id);
         }
     }
 

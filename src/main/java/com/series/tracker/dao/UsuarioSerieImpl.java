@@ -55,4 +55,24 @@ public class UsuarioSerieImpl implements UsuarioSerieDao{
             entityManager.merge(usuarioSerie);
         }
     }
+
+    @Override
+    public void eliminarVisualizacionesPorSerieId(long serieId) {
+        String query = "UPDATE UsuarioSerie us SET us.activo = :activo WHERE us.serie.id = :serieId";
+
+        entityManager.createQuery(query)
+                .setParameter("activo", false)
+                .setParameter("serieId", serieId)
+                .executeUpdate();
+    }
+
+    @Override
+    public void eliminarVisualizacionesPorUsuarioId(long usuarioId) {
+        String query = "UPDATE UsuarioSerie us SET us.activo = :activo WHERE us.usuario.id = :usuarioId";
+
+        entityManager.createQuery(query)
+                .setParameter("activo", false)
+                .setParameter("usuarioId", usuarioId)
+                .executeUpdate();
+    }
 }

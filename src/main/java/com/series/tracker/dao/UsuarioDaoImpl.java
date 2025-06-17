@@ -1,8 +1,10 @@
 package com.series.tracker.dao;
 
+import com.series.tracker.models.Serie;
 import com.series.tracker.models.Usuario;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
@@ -14,6 +16,9 @@ import java.util.List;
 public class UsuarioDaoImpl implements UsuarioDao{
     @PersistenceContext
     EntityManager entityManager;
+
+    @Autowired
+    private UsuarioSerieDao usuarioSerieDao;
 
     @Override
     public void crearUsuario(Usuario usuario) {
@@ -51,7 +56,22 @@ public class UsuarioDaoImpl implements UsuarioDao{
         Usuario usuario = entityManager.find(Usuario.class, id);
 
         if (usuario != null) {
-            //entityManager.remove(usuario);
+            String querySeriesIds = "SELECT us.serie.id FROM UsuarioSerie us WHERE us.usuario.id = :usuarioId AND us.activo = true";
+            List<Long> seriesIds = entityManager.createQuery(querySeriesIds, Long.class)
+                    .setParameter("usuarioId", id)
+                    .getResultList();
+
+            usuarioSerieDao.eliminarVisualizacionesPorUsuarioId(id);
+
+            for (Long serieId : seriesIds) {
+                Serie serie = entityManager.find(Serie.class, serieId);
+
+                if (serie != null) {
+                    serie.setActivo(false);
+                    entityManager.merge(serie);
+                }
+            }
+
             usuario.setActivo(false);
             entityManager.merge(usuario);
         }

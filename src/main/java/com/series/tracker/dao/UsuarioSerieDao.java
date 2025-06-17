@@ -14,4 +14,8 @@ public interface UsuarioSerieDao {
     void modificarVisualizacion(UsuarioSerie usuarioSerie);
 
     void eliminarVisualizacion(long usuarioId, long serieId);
+
+    void eliminarVisualizacionesPorSerieId(long serieId);
+
+    void eliminarVisualizacionesPorUsuarioId(long usuarioId);
 }

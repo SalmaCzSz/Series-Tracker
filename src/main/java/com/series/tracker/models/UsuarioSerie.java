@@ -75,4 +75,8 @@ public class UsuarioSerie {
     @Column(name = "calificacion_escenografia")
     @Getter @Setter
     private Double calificacionEscenografia;
+
+    @Column(name = "activo")
+    @Getter @Setter
+    private boolean activo;
 }

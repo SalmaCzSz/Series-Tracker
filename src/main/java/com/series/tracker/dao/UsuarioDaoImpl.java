@@ -31,7 +31,14 @@ public class UsuarioDaoImpl implements UsuarioDao{
 
     @Override
     public Usuario obtenerUsuarioPorId(long id) {
-        return entityManager.find(Usuario.class, id);
+        String query = "FROM Usuario WHERE id = :id AND activo = :activo";
+
+        List<Usuario> lista = entityManager.createQuery(query, Usuario.class)
+                .setParameter("id", id)
+                .setParameter("activo", true)
+                .getResultList();
+
+        return lista.isEmpty() ? null : lista.get(0);
     }
 
     @Override
@@ -52,10 +59,11 @@ public class UsuarioDaoImpl implements UsuarioDao{
 
     @Override
     public Usuario obtenerUsuarioPorCredenciales(Usuario usuario){
-        String query = "FROM Usuario WHERE correo = :correo";
+        String query = "FROM Usuario WHERE correo = :correo AND activo = :activo";
 
         List<Usuario> lista = entityManager.createQuery(query, Usuario.class)
                 .setParameter("correo", usuario.getCorreo())
+                .setParameter("activo", true)
                 .getResultList();
 
         if(lista.isEmpty()){
@@ -65,10 +73,6 @@ public class UsuarioDaoImpl implements UsuarioDao{
         String passwordHashed = lista.get(0).getPassword();
         Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
 
-        if(argon2.verify(passwordHashed, usuario.getPassword())){
-            return lista.get(0);
-        } else {
-            return null;
-        }
+        return argon2.verify(passwordHashed, usuario.getPassword()) ? lista.get(0) : null;
     }
 }

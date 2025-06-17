@@ -50,5 +50,9 @@ public class Serie {
     @Getter @Setter
     @Lob
     private byte[] imagenPortada;
+
+    @Column(name = "activo")
+    @Getter @Setter
+    private boolean activo;
 }
 

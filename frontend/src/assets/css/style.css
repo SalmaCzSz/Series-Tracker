@@ -1,0 +1,51 @@
+:root {
+  --color-fondo: #F9F9F9;
+  --color-primario: #D9ABFF;
+  --color-secundario: #ABE4FF;
+  --color-exito: #DDFFAB;
+  --color-advertencia: #FFDAAB;
+  --color-error: #FFABAB;
+}
+
+body {
+  background-color: var(--color-fondo);
+  font-family: sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Quicksand';
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.75rem;
+  border: none;
+  border-radius: 20px;
+  outline: none;
+  background-color: var(--color-fondo);
+  font-family: 'QuickSand';
+}
+
+p{
+  font-family: 'Quicksand';
+}
+
+button{
+  font-family: 'QuickSand'; 
+  font-weight: bold;
+}
+
+.error-msg {
+  color: red;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.success-msg {
+  color: green;
+  margin-top: 1rem;
+  text-align: center;
+}

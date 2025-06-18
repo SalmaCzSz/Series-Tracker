@@ -71,7 +71,13 @@
 			<version>2.5</version>
 		</dependency>
 
-		<!-- para el jason web token -->
+		<!-- Spring Security -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!-- para el json web token -->
 		<dependency> 
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt</artifactId>

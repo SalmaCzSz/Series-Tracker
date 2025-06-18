@@ -20,32 +20,22 @@ public class UsuarioSerieImpl implements UsuarioSerieDao{
 
     @Override
     public List<UsuarioSerie> obtenerSeriesPorUsuarioId(long usuarioId) {
-        String query = "FROM UsuarioSerie WHERE usuario.id = :usuarioId";
+        String query = "FROM UsuarioSerie WHERE usuario.id = :usuarioId AND activo = :activo";
 
         return entityManager.createQuery(query, UsuarioSerie.class)
                 .setParameter("usuarioId", usuarioId)
+                .setParameter("activo", true)
                 .getResultList();
     }
 
     @Override
     public UsuarioSerie obtenerVisualizacion(long usuarioId, long serieId) {
-        String query = "FROM UsuarioSerie WHERE usuario.id = :usuarioId AND serie.id = :serieId";
+        String query = "FROM UsuarioSerie WHERE usuario.id = :usuarioId AND serie.id = :serieId and activo = :activo";
 
         List<UsuarioSerie> lista = entityManager.createQuery(query, UsuarioSerie.class)
                 .setParameter("usuarioId", usuarioId)
                 .setParameter("serieId", serieId)
-                .getResultList();
-
-        return lista.isEmpty() ? null : lista.get(0);
-    }
-
-    @Override
-    public UsuarioSerie obtenerVisualizacionPorId(long usuarioId, long serieId) {
-        String query = "FROM UsuarioSerie WHERE usuario.id = :usuarioId AND serie.id = :serieId";
-
-        List<UsuarioSerie> lista = entityManager.createQuery(query, UsuarioSerie.class)
-                .setParameter("usuarioId", usuarioId)
-                .setParameter("serieId", serieId)
+                .setParameter("activo", true)
                 .getResultList();
 
         return lista.isEmpty() ? null : lista.get(0);
@@ -61,7 +51,28 @@ public class UsuarioSerieImpl implements UsuarioSerieDao{
         UsuarioSerie usuarioSerie = obtenerVisualizacion(usuarioId, serieId);
 
         if (usuarioSerie != null) {
-            entityManager.remove(usuarioSerie);
+            usuarioSerie.setActivo(false);
+            entityManager.merge(usuarioSerie);
         }
+    }
+
+    @Override
+    public void eliminarVisualizacionesPorSerieId(long serieId) {
+        String query = "UPDATE UsuarioSerie us SET us.activo = :activo WHERE us.serie.id = :serieId";
+
+        entityManager.createQuery(query)
+                .setParameter("activo", false)
+                .setParameter("serieId", serieId)
+                .executeUpdate();
+    }
+
+    @Override
+    public void eliminarVisualizacionesPorUsuarioId(long usuarioId) {
+        String query = "UPDATE UsuarioSerie us SET us.activo = :activo WHERE us.usuario.id = :usuarioId";
+
+        entityManager.createQuery(query)
+                .setParameter("activo", false)
+                .setParameter("usuarioId", usuarioId)
+                .executeUpdate();
     }
 }

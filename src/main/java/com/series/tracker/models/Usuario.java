@@ -36,4 +36,8 @@ public class Usuario {
     @Column(name = "password")
     @Getter @Setter
     private String password;
+
+    @Column(name = "activo")
+    @Getter @Setter
+    private boolean activo;
 }

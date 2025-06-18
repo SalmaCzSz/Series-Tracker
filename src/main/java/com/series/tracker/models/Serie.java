@@ -5,14 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Enumerated;
-import javax.persistence.EnumType;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "SERIE")
@@ -55,6 +48,11 @@ public class Serie {
 
     @Column(name = "imagen_portada")
     @Getter @Setter
-    private String imagenPortada;
+    @Lob
+    private byte[] imagenPortada;
+
+    @Column(name = "activo")
+    @Getter @Setter
+    private boolean activo;
 }
 

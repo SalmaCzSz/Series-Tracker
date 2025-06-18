@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS SERIE (
     pais VARCHAR(100) NOT NULL,
     anio_emision INT NOT NULL,
     protagonistas_historia VARCHAR(500) NOT NULL,
-    imagen_portada VARCHAR(255) NOT NULL,
+    imagen_portada LONGBLOB NOT NULL,
     activo BOOLEAN DEFAULT TRUE
 );
 
@@ -34,15 +34,15 @@ CREATE TABLE IF NOT EXISTS USUARIO_SERIE (
     plataforma VARCHAR(100) NOT NULL,
     estado VARCHAR(50) NOT NULL,
     fecha_inicio DATE NOT NULL,
-    fecha_fin DATE NOT NULL,
-    frase_favorita VARCHAR(1000) NOT NULL,
-    cancion_favorita VARCHAR(255) NOT NULL,
-    calificacion_historia DOUBLE NOT NULL,
-    calificacion_ost DOUBLE NOT NULL,
-    calificacion_escenografia DOUBLE NOT NULL,
+    fecha_fin DATE,
+    frase_favorita VARCHAR(1000) DEFAULT '',
+    cancion_favorita VARCHAR(255) DEFAULT '',
+    calificacion_historia DOUBLE DEFAULT 0.0,
+    calificacion_ost DOUBLE DEFAULT 0.0,
+    calificacion_escenografia DOUBLE DEFAULT 0.0,
     activo BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (id_usuario) REFERENCES USUARIO(id),
-    FOREIGN KEY (id_serie) REFERENCES SERIE(id)
+    FOREIGN KEY (id_usuario) REFERENCES USUARIO(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_serie) REFERENCES SERIE(id) ON DELETE CASCADE
 );
 
 -- Tabla HISTORIAL_USUARIO_SERIE
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS HISTORIAL_SERIE (
     pais VARCHAR(100),
     anio_emision INT,
     protagonistas_historia VARCHAR(500),
-    imagen_portada VARCHAR(255),
+    imagen_portada LONGBLOB,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_serie) REFERENCES SERIE(id)
 );

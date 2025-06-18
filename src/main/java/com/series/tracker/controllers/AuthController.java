@@ -6,10 +6,9 @@ import com.series.tracker.utils.JWTUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class AuthController {
@@ -19,16 +18,31 @@ public class AuthController {
     @Autowired
     private JWTUtil jwtUtil;
 
-    @RequestMapping(value = "api/login", method = RequestMethod.POST)
-    public ResponseEntity<String>  login(@RequestBody Usuario usuario){
+    @PostMapping("/api/login")
+    public ResponseEntity<Map<String, String>>  login(@RequestBody Usuario usuario){
+        if(usuario.getCorreo() == null || usuario.getCorreo().isBlank() ||
+           usuario.getPassword() == null || usuario.getPassword().isBlank()){
+            Map<String, String> error = new HashMap<>();
+            error.put("mensaje", "Correo y contraseña son obligatorios");
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+
         Usuario usuarioLogueado = usuarioDao.obtenerUsuarioPorCredenciales(usuario);
 
         if(usuarioLogueado != null){
             String tokenJwt = jwtUtil.create(String.valueOf(usuarioLogueado.getId()), usuarioLogueado.getCorreo());
 
-            return ResponseEntity.ok(tokenJwt);
+            Map<String, String> response = new HashMap<>();
+            response.put("token", tokenJwt);
+            response.put("userId", String.valueOf(usuarioLogueado.getId()));
+
+            return ResponseEntity.ok(response);
         }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+        Map<String, String> error = new HashMap<>();
+        error.put("mensaje", "Credenciales inválidas");
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 }

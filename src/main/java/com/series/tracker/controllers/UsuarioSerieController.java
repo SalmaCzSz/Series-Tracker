@@ -1,25 +1,45 @@
 package com.series.tracker.controllers;
 
 import com.series.tracker.dao.UsuarioSerieDao;
+import com.series.tracker.utils.SecurityUtil;
 import com.series.tracker.models.UsuarioSerie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios/series")
 public class UsuarioSerieController {
-
     @Autowired
     private UsuarioSerieDao usuarioSerieDao;
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<UsuarioSerie> registrarVisualizacion(@RequestBody UsuarioSerie usuarioSerie) {
-        if (usuarioSerie.getUsuario() == null || usuarioSerie.getSerie() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    private String getAuthenticatedUsername() {
+        return SecurityUtil.getAuthenticatedUsername();
+    }
+
+    private ResponseEntity<Map<String, String>> unauthorizedResponse() {
+        Map<String, String> error = new HashMap<>();
+        error.put("mensaje", "Usuario no autorizado. Por favor inicia sesión.");
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @PostMapping
+    public ResponseEntity<?> registrarVisualizacion(@RequestBody UsuarioSerie usuarioSerie) {
+        String username = getAuthenticatedUsername();
+
+        if (username == null) {
+            return unauthorizedResponse();
+        }
+
+        ResponseEntity<Map<String, String>> error = validarUsuarioSerie(usuarioSerie);
+
+        if (error != null){
+            return error;
         }
 
         usuarioSerieDao.registrarVisualizacion(usuarioSerie);
@@ -27,75 +47,124 @@ public class UsuarioSerieController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioSerie);
     }
 
-    @RequestMapping(value = "/{usuarioId}", method = RequestMethod.GET)
-    public ResponseEntity<List<UsuarioSerie>> obtenerSeriesPorUsuarioId(@PathVariable long usuarioId) {
-        List<UsuarioSerie> series = usuarioSerieDao.obtenerSeriesPorUsuarioId(usuarioId);
+    @GetMapping("/{usuarioId}")
+    public ResponseEntity<?> obtenerSeriesPorUsuarioId(@PathVariable long usuarioId) {
+        String username = getAuthenticatedUsername();
 
-        if (series.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        if (username == null) {
+            return unauthorizedResponse();
         }
 
-        return ResponseEntity.ok(series);
+        List<UsuarioSerie> series = usuarioSerieDao.obtenerSeriesPorUsuarioId(usuarioId);
+
+        if (!series.isEmpty()) {
+            return ResponseEntity.ok(series);
+        }
+
+        Map<String, String> error = new HashMap<>();
+        error.put("mensaje", "Series no encontradas");
+
+        return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    @RequestMapping(value = "/{usuarioId}/{serieId}", method = RequestMethod.GET)
-    public ResponseEntity<UsuarioSerie> obtenerVisualizacion(@PathVariable long usuarioId, @PathVariable long serieId) {
+    @GetMapping("/{usuarioId}/{serieId}")
+    public ResponseEntity<?> obtenerVisualizacion(@PathVariable long usuarioId, @PathVariable long serieId) {
+        String username = getAuthenticatedUsername();
+
+        if(username == null){
+            return unauthorizedResponse();
+        }
+
         UsuarioSerie usuarioSerie = usuarioSerieDao.obtenerVisualizacion(usuarioId, serieId);
 
         if (usuarioSerie != null) {
             return ResponseEntity.ok(usuarioSerie);
         }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        Map<String, String> error = new HashMap<>();
+        error.put("mensaje", "Serie no encontrada");
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    @RequestMapping(value = "/{usuarioId}/{serieId}", method = RequestMethod.PUT)
-    public ResponseEntity<UsuarioSerie> modificarVisualizacion(@PathVariable long usuarioId,
+    @PutMapping("/{usuarioId}/{serieId}")
+    public ResponseEntity<?> modificarVisualizacion(@PathVariable long usuarioId,
                                                                @PathVariable long serieId,
                                                                @RequestBody UsuarioSerie usuarioSerieActualizada) {
+        String username = getAuthenticatedUsername();
+
+        if(username == null){
+            return unauthorizedResponse();
+        }
+
         UsuarioSerie usuarioSerieExistente = usuarioSerieDao.obtenerVisualizacion(usuarioId, serieId);
 
         if (usuarioSerieExistente != null) {
-            if (usuarioSerieActualizada.getEstado() != null) {
-                usuarioSerieExistente.setEstado(usuarioSerieActualizada.getEstado());
+            ResponseEntity<Map<String,String>> error = validarUsuarioSerie(usuarioSerieActualizada);
+
+            if(error != null){
+                return error;
             }
-            if (usuarioSerieActualizada.getPlataforma() != null) {
-                usuarioSerieExistente.setPlataforma(usuarioSerieActualizada.getPlataforma());
-            }
-            if (usuarioSerieActualizada.getFecha_inicio() != null) {
-                usuarioSerieExistente.setFecha_inicio(usuarioSerieActualizada.getFecha_inicio());
-            }
-            if (usuarioSerieActualizada.getFecha_fin() != null) {
-                usuarioSerieExistente.setFecha_fin(usuarioSerieActualizada.getFecha_fin());
-            }
-            if (usuarioSerieActualizada.getFraseFavorita() != null) {
-                usuarioSerieExistente.setFraseFavorita(usuarioSerieActualizada.getFraseFavorita());
-            }
-            if (usuarioSerieActualizada.getCancionFavorita() != null) {
-                usuarioSerieExistente.setCancionFavorita(usuarioSerieActualizada.getCancionFavorita());
-            }
-            if (usuarioSerieActualizada.getCalificacionHistoria() != null) {
-                usuarioSerieExistente.setCalificacionHistoria(usuarioSerieActualizada.getCalificacionHistoria());
-            }
-            if (usuarioSerieActualizada.getCalificacionOst() != null) {
-                usuarioSerieExistente.setCalificacionOst(usuarioSerieActualizada.getCalificacionOst());
-            }
-            if (usuarioSerieActualizada.getCalificacionEscenografia() != null) {
-                usuarioSerieExistente.setCalificacionEscenografia(usuarioSerieActualizada.getCalificacionEscenografia());
-            }
+
+            usuarioSerieExistente.setPlataforma(usuarioSerieActualizada.getPlataforma());
+            usuarioSerieExistente.setEstado(usuarioSerieActualizada.getEstado());
+            usuarioSerieExistente.setFecha_inicio(usuarioSerieActualizada.getFecha_inicio());
+            usuarioSerieExistente.setFecha_fin(usuarioSerieActualizada.getFecha_fin());
+            usuarioSerieExistente.setFraseFavorita(usuarioSerieActualizada.getFraseFavorita());
+            usuarioSerieExistente.setCancionFavorita(usuarioSerieActualizada.getCancionFavorita());
+            usuarioSerieExistente.setCalificacionHistoria(usuarioSerieActualizada.getCalificacionHistoria());
+            usuarioSerieExistente.setCalificacionOst(usuarioSerieActualizada.getCalificacionOst());
+            usuarioSerieExistente.setCalificacionEscenografia(usuarioSerieActualizada.getCalificacionEscenografia());
 
             usuarioSerieDao.modificarVisualizacion(usuarioSerieExistente);
 
             return ResponseEntity.ok(usuarioSerieExistente);
         }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        Map<String, String> error = new HashMap<>();
+        error.put("mensaje", "Serie no encontrada");
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    @RequestMapping(value = "/{usuarioId}/{serieId}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> eliminarVisualizacion(@PathVariable long usuarioId, @PathVariable long serieId) {
+    @DeleteMapping("/{usuarioId}/{serieId}")
+    public ResponseEntity<?> eliminarVisualizacion(@PathVariable long usuarioId, @PathVariable long serieId) {
+        String username = getAuthenticatedUsername();
+
+        if(username == null){
+            return unauthorizedResponse();
+        }
+
+        UsuarioSerie usuarioSerie = usuarioSerieDao.obtenerVisualizacion(usuarioId, serieId);
+
+        if(usuarioSerie == null){
+            Map<String, String> error = new HashMap<>();
+            error.put("mensaje", "Serie no encontrada");
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+
         usuarioSerieDao.eliminarVisualizacion(usuarioId, serieId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private ResponseEntity<Map<String, String>> validarUsuarioSerie(UsuarioSerie usuarioSerie) {
+        if (usuarioSerie.getPlataforma() == null ||
+            usuarioSerie.getEstado() == null ||
+            usuarioSerie.getFecha_inicio() == null ||
+            //usuarioSerie.getFecha_fin() == null ||
+            usuarioSerie.getFraseFavorita() == null || usuarioSerie.getFraseFavorita().isBlank() ||
+            usuarioSerie.getCancionFavorita() == null || usuarioSerie.getCancionFavorita().isBlank() ||
+            usuarioSerie.getCalificacionHistoria() < 0 ||
+            usuarioSerie.getCalificacionOst() < 0 ||
+            usuarioSerie.getCalificacionEscenografia() < 0) {
+            Map<String, String> error = new HashMap<>();
+            error.put("mensaje", "Por favor, ingrese todos los datos");
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+
+        return null;
     }
 }

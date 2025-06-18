@@ -15,9 +15,9 @@
     </div>
 
     <!-- Modal info -->
-    <Modal v-if="mostrarModal" @close="cerrarInfo" claseExtra="modal-detalle" class="text-center">
+    <Modal v-if="mostrarModal" @close="cerrarInfo" claseExtra="modal-detalle mi-modal-scroll" class="text-center">
       <template #titulo>
-        <h3>{{ itemSeleccionado?.titulo }} &nbsp;&nbsp;|&nbsp;&nbsp;{{ formateaEnum(itemSeleccionado.genero) }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ itemSeleccionado.pais }} - {{ itemSeleccionado.anioEmision }}</h3>
+        <h3>{{ itemSeleccionado.titulo }} &nbsp;&nbsp;|&nbsp;&nbsp;{{ formateaEnum(itemSeleccionado.genero) }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ itemSeleccionado.pais }} - {{ itemSeleccionado.anioEmision }}</h3>
       </template>
 
       <template #contenido>
@@ -27,9 +27,9 @@
                   class="img-fluid rounded mb-3 flex-grow-1"
                   style="max-height: 300px; width: 100%; object-fit: contain;"/>
 
-            <div class="text-center">
+            <div class="text-center mb-0">
               <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= calcularPromedio(itemSeleccionado) }"> ★ </span>
-              <small class="text-muted d-block mt-1"> {{ calcularPromedio(itemSeleccionado).toFixed(1) }} </small>
+              <small class="text-muted d-block mb-0"> {{ calcularPromedio(itemSeleccionado).toFixed(1) }} </small>
             </div>  
           </div>
 
@@ -70,7 +70,39 @@
       </template>
 
       <template #botones>
-        
+        <div class="botones-footer">
+          <button type="button" class="btn-eliminar" @click.prevent="confirmarAccion('eliminar')">ELIMINAR</button>
+          <button type="button" class="btn-editar" @click="vistaEditar(itemSeleccionado)">EDITAR</button>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Modal Confirmar Acción -->
+    <Modal v-if="mostrarConfirmacion" @close="mostrarConfirmacion = false" claseExtra="modal-confirmacion">
+      <template #titulo >
+        <h3 class="h4 text-gray-900 mb-4"> Confirmar acción </h3>
+      </template>
+      <template #contenido>
+        <p>
+          Estás a punto de eliminar la series <strong> {{ itemSeleccionado.titulo }} </strong> <br>
+          ¿Deseas continuar?
+        </p>
+      </template>
+      <template #botones>
+        <div>
+          <div class="botones-footer">
+            <button type="button" class="btn-cancelar" @click="mostrarConfirmacion = false">CANCELAR</button>
+            <button type="submit" class="btn-confirmar" @click.prevent="eliminarSerie"> {{ loading ? 'Eliminando...' : 'CONFIRMAR' }} </button>
+          </div>
+          <div class="mensaje-feedback">
+            <hr>
+            <div class="text-center">
+              <p v-if="mensaje" :class="{'error-msg': error, 'success-msg': !error}">
+                {{ mensaje }}
+              </p>
+            </div>
+          </div>
+        </div>
       </template>
     </Modal>
   </div>
@@ -78,6 +110,7 @@
 
 <script setup>
   import { ref } from 'vue';
+  import { useRouter } from 'vue-router';
   import PanelItem from './PanelItem.vue';
   import Modal from './Modal.vue'
 
@@ -88,9 +121,13 @@
     }
   })
 
+  const router = useRouter()
   const activarIndex = ref(0)
   const mostrarModal = ref(false)
   const itemSeleccionado = ref(null)
+  const loading = ref(false)
+  const mensaje = ref('')
+  const error = ref(false)
 
   const activarItem = (index) => {
     activarIndex.value = index
@@ -121,6 +158,68 @@
     
     return valores.reduce((a, b) => a + b, 0) / valores.length;
   }
+
+  const mostrarConfirmacion = ref(false)
+  const accionConfirmar = ref(null)
+
+  function confirmarAccion(accion){
+    accionConfirmar.value = accion
+    mostrarConfirmacion.value = true
+  }
+
+  const emit = defineEmits(['actualizarSeries'])
+
+  async function eliminarSerie(){
+    loading.value = true
+    mensaje.value = ''
+    error.value = false
+    
+    try{
+      const token = localStorage.getItem('token')
+
+      const response = await fetch(`http://localhost:8080/api/series/${itemSeleccionado.value.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if(!response.ok){
+        let data = {}
+
+        try{
+          data = await response.json()
+        }catch(error){}
+
+        mensaje.value = data.mensaje || 'Error eliminando serie'
+        error.value = true
+        return
+      }
+
+      emit('actualizarSeries', itemSeleccionado.value.id)
+
+      mensaje.value = 'Serie eliminada correctamente'
+      error.value = false
+
+      setTimeout(() => {
+        mostrarConfirmacion.value = false
+      }, 10000)
+
+      setTimeout(() => {
+        mostrarModal.value = false 
+      }, 35000)
+    }catch(error){
+      mensaje.value = error.message || 'Error inesperado al eliminar'
+      error.value = true
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function vistaEditar(item){
+    router.push( `/editarSerie/${item.id}`)
+  }
 </script>
 
 <style scoped>
@@ -142,6 +241,7 @@
   .star {
     font-size: 1.5rem;
     color: #ccc;
+    margin-bottom: 0 !important;
   }
 
   .star.filled {
@@ -156,5 +256,68 @@
     line-height: 1.5em;  
     width: 100%;
     box-sizing: border-box;    
+  }
+
+  button {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    width: 100%;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .botones-footer {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .botones-footer button{
+    width: 95%;
+    max-width: 200px;
+  }
+
+  .btn-eliminar{
+    background-color: var(--color-error);
+  }
+
+  .btn-confirmar{
+    background-color: var(--color-exito);
+  }
+
+  .btn-editar,
+  .btn-cancelar{
+    background-color: var(--color-secundario);
+    margin-right: 0 !important;
+  }
+ 
+  @media (min-width: 768px) {
+    .botones-footer {
+      flex-direction: row;
+      justify-content: flex-end;
+      gap: 1rem;
+      padding-right: 3rem;
+    }
+    .botones-footer button { 
+      min-width: 120px;
+      width: auto;
+      margin: 0;
+    }
+    .mensaje-feedback {
+      text-align: center;
+      margin-top: 1rem;
+      width: 100%;
+    }
+  }
+
+  .mensaje-feedback {
+    text-align: center;
+    margin-top: 1rem;
   }
 </style>

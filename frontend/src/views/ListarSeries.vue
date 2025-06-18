@@ -3,7 +3,7 @@
     <main class="flex-grow-1 container-fluid px-3 px-md-5">
       <input v-model="filtro" type="text" placeholder="Filtrar serie" class="mb-3 input-filtro"/>
       <div class="mb-5 min-vh-">
-        <PanelCard :items="seriesFiltradas" />
+        <PanelCard :items="seriesFiltradas" @actualizarSeries="eliminarLocalmente"/>
       </div>
     </main>
   </div>
@@ -85,6 +85,11 @@
       loading.value = false
     }
   })
+
+  function eliminarLocalmente(id) {
+    const index = series.value.findIndex(item => item.id === id)
+    if (index !== -1) series.value.splice(index, 1)
+  }
 </script>
 
 <style scoped>

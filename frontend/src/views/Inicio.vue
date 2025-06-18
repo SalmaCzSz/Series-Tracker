@@ -16,7 +16,7 @@
       <p class="text-muted">Sin información disponible</p>
     </div>
     <div v-else>
-      <PanelSlider :items="series">
+      <PanelSlider :items="series" @actualizarSeries="eliminarLocalmente">
         <template #modal="{ show, item, close }">
           <MyModal v-if="show" @close="close">
             <template #titulo>{{ item.nombre }} | {{ item.genero }} | {{ item.pais }} - {{ item.anioEmision }}</template>
@@ -44,7 +44,7 @@
       <p class="text-muted">Sin información disponible</p>
     </div>
     <div v-else>
-      <PanelCard :items="series" mostrarSeccion="mejores">
+      <PanelCard :items="series" mostrarSeccion="mejores" @actualizarSeries="eliminarLocalmente">
         <template #modal="{ show, item, close }">
           <MyModal v-if="show" @close="close">
             <template #titulo> {{ item.nombre }} | {{ item.genero }} | {{ item.pais }} - {{ item.anioEmision }}</template>
@@ -72,7 +72,7 @@
       <p class="text-muted">Sin información disponible</p>
     </div>
     <div v-else>
-      <PanelCard :items="series" mostrarSeccion="peores">
+      <PanelCard :items="series" mostrarSeccion="peores" @actualizarSeries="eliminarLocalmente">
         <template #modal="{ show, item, close }">
           <MyModal v-if="show" @close="close">
             <template #titulo> {{ item.nombre }} | {{ item.genero }} | {{ item.pais }} - {{ item.anioEmision }}</template>
@@ -149,6 +149,7 @@
   const error = ref(false)
   const chartDataPais = ref(null)
   const chartDataEstado = ref(null)
+  const MAX_SERIES = 5
 
   onMounted(async () => {
     try {
@@ -172,7 +173,7 @@
         }
       }
 
-      const sorted = data.sort((a, b) => b.id - a.id).slice(0, 5)
+      const sorted = data.sort((a, b) => b.id - a.id).slice(0, MAX_SERIES)
 
       series.value = sorted.map(item => ({
         id: item.id,
@@ -196,33 +197,7 @@
         calificacionEscenografia: item.calificacionEscenografia
       }))
 
-      const paisCount = {}
-      series.value.forEach(serie => {
-        paisCount[serie.pais] = (paisCount[serie.pais] || 0)  + 1
-      })
-
-      chartDataPais.value = {
-        labels: Object.keys(paisCount),
-        datasets: [{
-          label: '',
-          data: Object.values(paisCount),
-          backgroundColor: ['#fad3cf', '#ffd0e2', '#ffd0f2', '#cfd0fe', '#cfffd0', '#d8fdf0', '#fffef0', '#feffd5']
-        }]
-      }
-
-      const estadoCount = {}
-      series.value.forEach(serie => {
-        estadoCount[serie.estado] = (estadoCount[serie.estado] || 0) + 1
-      })
-
-      chartDataEstado.value = {
-        labels: Object.keys(estadoCount),
-        datasets: [{
-          label: '',
-          data: Object.values(estadoCount),
-          backgroundColor: ['#feffd5', '#fffef0', '#d8fdf0', '#cfffd0', '#cfd0fe', '#ffd0f2', '#ffd0e2', '#fad3cf']
-        }]
-      }
+      actualizarGraficas()
     } catch (err) {
       console.error('Error al obtener series: ', err)
       error.value = true
@@ -230,6 +205,41 @@
       loading.value = false
     }
   })
+
+  function eliminarLocalmente(id) {
+    const index = series.value.findIndex(item => item.id === id)
+    if (index !== -1) series.value.splice(index, 1)
+
+    actualizarGraficas()
+  }
+  
+  function actualizarGraficas() {
+    const paisCount = {}
+    const estadoCount = {}
+
+    series.value.forEach(serie => {
+      paisCount[serie.pais] = (paisCount[serie.pais] || 0) + 1
+      estadoCount[serie.estado] = (estadoCount[serie.estado] || 0) + 1
+    })
+
+    chartDataPais.value = {
+      labels: Object.keys(paisCount),
+      datasets: [{
+        label: '',
+        data: Object.values(paisCount),
+        backgroundColor: ['#fad3cf', '#ffd0e2', '#ffd0f2', '#cfd0fe', '#cfffd0', '#d8fdf0', '#fffef0', '#feffd5']
+      }]
+    }
+
+    chartDataEstado.value = {
+      labels: Object.keys(estadoCount),
+      datasets: [{
+        label: '',
+        data: Object.values(estadoCount),
+        backgroundColor: ['#feffd5', '#fffef0', '#d8fdf0', '#cfffd0', '#cfd0fe', '#ffd0f2', '#ffd0e2', '#fad3cf']
+      }]
+    }
+  }
 </script>
 
 <style scoped>

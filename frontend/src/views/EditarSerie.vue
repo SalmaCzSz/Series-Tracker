@@ -280,7 +280,7 @@
   }
 
   function cancelarEdicion(){
-    router.push('/inicio')
+    router.back();
   }
 
   async function editarSerie(){
